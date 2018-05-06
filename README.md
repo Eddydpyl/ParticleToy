@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Eddydpyl/ParticleToy.svg?token=Fpth26ybpqjsTJdNeqmb&branch=master)](https://travis-ci.com/Eddydpyl/ParticleToy)
+
 # 2IMV25 - Interactive Virtual Environments
 
 ### Setting up the project
