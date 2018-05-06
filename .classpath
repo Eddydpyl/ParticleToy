@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="/ParticleToy/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/lwjgl"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ejml"/>
-	<classpathentry kind="output" path="out/production/ParticleToy"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-all:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-core:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-fdense:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-ddense:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-cdense:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-zdense:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-dsparse:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-simple:0.34"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-opengl:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-glfw:3.1.6"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
