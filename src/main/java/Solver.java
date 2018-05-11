@@ -1,13 +1,13 @@
-import physics.model.Particle;
-import physics.LinearSolver2D;
+import physics.model.Particle2D;
+import physics.LinearSolver;
 
 import java.util.Set;
 
 public class Solver {
 
-    public static void simulationStep(Set<Particle> particles, double dt) {
-        for (Particle particle : particles) {
-            particle.setPosition(LinearSolver2D.vecAdd(particle.getPosition(), LinearSolver2D.vecTimesScalar(particle.getVelocity(), dt)));
+    public static void simulationStep(Set<Particle2D> particles, double dt) {
+        for (Particle2D particle : particles) {
+            particle.setPosition(LinearSolver.vecAdd(particle.getPosition(), LinearSolver.vecTimesScalar(particle.getVelocity(), dt)));
         }
     }
 
