@@ -1,3 +1,5 @@
+package physics;
+
 import com.sun.javafx.geom.Vec2d;
 
 public class LinearSolver2D {

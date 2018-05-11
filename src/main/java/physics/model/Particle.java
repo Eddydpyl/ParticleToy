@@ -1,3 +1,5 @@
+package physics.model;
+
 import com.sun.javafx.geom.Vec2d;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -7,22 +9,29 @@ public class Particle {
     private Vec2d constructPos;
     private Vec2d position;
     private Vec2d velocity;
+    private Vec2d forces;
+    private double mass;
 
-    public Particle(Vec2d constructPos) {
+    public Particle(Vec2d constructPos, double mass) {
         this.constructPos = constructPos;
         this.position = new Vec2d(0.0, 0.0);
         this.velocity = new Vec2d(0.0, 0.0);
+        this.forces = new Vec2d(0.0, 0.0);
+        this.mass = mass;
     }
 
-    public Particle(Vec2d constructPos, Vec2d position, Vec2d velocity) {
+    public Particle(Vec2d constructPos, Vec2d position, Vec2d velocity, Vec2d forces, double mass) {
         this.constructPos = constructPos;
         this.position = position;
         this.velocity = velocity;
+        this.forces = forces;
+        this.mass = mass;
     }
 
     public void reset() {
         this.position = constructPos;
         this.velocity = new Vec2d(0.0, 0.0);
+        this.forces = new Vec2d(0.0, 0.0);
     }
 
     public void draw() {
@@ -59,4 +68,21 @@ public class Particle {
     public void setVelocity(Vec2d velocity) {
         this.velocity = velocity;
     }
+
+    public Vec2d getForces() {
+        return forces;
+    }
+
+    public void setForces(Vec2d forces) {
+        this.forces = forces;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public void setMass(double mass) {
+        this.mass = mass;
+    }
+
 }

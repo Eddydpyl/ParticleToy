@@ -1,3 +1,6 @@
+import physics.model.Particle;
+import physics.LinearSolver2D;
+
 import java.util.Set;
 
 public class Solver {

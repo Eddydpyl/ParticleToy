@@ -1,4 +1,6 @@
 import com.sun.javafx.geom.Vec2d;
+import physics.model.Particle;
+
 import static org.lwjgl.opengl.GL11.*;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
