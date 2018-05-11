@@ -9,17 +9,24 @@ public class SpringForce implements Force {
 
     private Particle p1, p2;
     private double ks, kd;
+    private double rest;
 
-    public SpringForce(Particle p1, Particle p2, double ks, double kd) {
+    public SpringForce(Particle p1, Particle p2, double ks, double kd, double rest) {
         this.p1 = p1;
         this.p2 = p2;
         this.ks = ks;
         this.kd = kd;
+        this.rest = rest;
     }
 
     @Override
     public void apply() {
-        Vec2d spring = vecDiff(vecTimesScalar(vecDiff(p1.getPosition(), p2.getPosition()), ks), vecTimesScalar(vecDiff(p1.getVelocity(), p2.getVelocity()), kd));
+        // Hook's Spring Law
+        Vec2d posDiff = vecDiff(p1.getPosition(), p2.getPosition());
+        Vec2d velDiff = vecDiff(p1.getVelocity(), p2.getVelocity());
+        double module = vecModule(posDiff);
+        double magnitude = (ks * (module - rest) + kd * (vecDot(posDiff, velDiff) / module)) / module;
+        Vec2d spring = vecTimesScalar(posDiff, magnitude);
         p1.setForces(vecDiff(p1.getForces(), spring));
         p2.setForces(vecAdd(p2.getForces(), spring));
     }

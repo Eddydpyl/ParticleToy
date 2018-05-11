@@ -34,4 +34,8 @@ public class LinearSolver2D {
         return x + y;
     }
 
+    public static double vecModule(Vec2d v) {
+        return Math.sqrt(vecDot(v, v));
+    }
+
 }
