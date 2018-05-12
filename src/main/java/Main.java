@@ -1,8 +1,11 @@
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import physics.model.*;
 
 import java.nio.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -14,8 +17,14 @@ public class Main {
 
     private static final int WIDTH = 512;
     private static final int HEIGHT = 512;
+    private static final double KS = 0.01;
+    private static final double KD = 0.01;
 
     private long window;
+
+    private List<Particle2D> particles;
+    private List<Force> forces;
+    private List<Constraint> constraints;
 
     public static void main(String[] args) {
         new Main().run();
@@ -72,6 +81,7 @@ public class Main {
         glfwMakeContextCurrent(window); // Make the OpenGL context current
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible
+        loadElements();
     }
 
     private void loop() {
@@ -97,35 +107,55 @@ public class Main {
 
             // Build time difference between current and start time.
             long currentTime = System.nanoTime();
-            float diff = (currentTime - startTime) / 1E9f;
+            double diff = (currentTime - startTime) / 1E6f;
 
-            draw(diff); // Draw the scene.
+            simulate(diff); // Draw the scene.
 
             glfwSwapBuffers(window); // swap the color buffers
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
         }
     }
 
+
+    /**
+     * Called once at the start of the simulation.
+     */
+    private void loadElements() {
+        particles = new ArrayList<>();
+        forces = new ArrayList<>();
+        constraints = new ArrayList<>();
+        particles.add(new Particle2D(new double[]{0,0}, 3.0));
+        particles.add(new Particle2D(new double[]{0.5,0}, 2.0));
+        forces.add(new SpringForce2D(particles.get(0), particles.get(1), KS, KD, 0.1));
+    }
+
     /**
      * Called every time a frame is created. Starts with a projection identity matrix enabled by default.
-     * @param time Seconds since the simulation started.
+     * @param time Milliseconds since the simulation started.
      */
-    private void draw(float time) {
-        drawForces();
-        drawConstraints();
-        drawParticles();
+    private void simulate(double time) {
+        // Clear force accumulators
+        for (Particle particle : particles) particle.setForces(new double[]{0,0});
+
+        // Compute and apply generic forces
+        for (Force force : forces) force.apply();
+
+        // Compute and apply constraint forces
+        Constraint.apply(particles, constraints, KS, KD);
+
+        // Update all particles state
+        for (Particle particle : particles) {
+            Particle.updateVelocity(particle, time);
+            Particle.updatePosition(particle, time);
+        }
+
+        draw(); // Draw all particles, forces and constraints.
     }
 
-    private void drawForces() {
-
-    }
-
-    private void drawConstraints() {
-
-    }
-
-    private void drawParticles() {
-
+    private void draw() {
+        for (Particle particle : particles) particle.draw();
+        for (Force force : forces) force.draw();
+        for (Constraint constraint : constraints) constraint.draw();
     }
 
 }

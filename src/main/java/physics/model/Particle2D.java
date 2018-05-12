@@ -12,7 +12,7 @@ public class Particle2D implements Particle {
 
     public Particle2D(double[] constructPos, double mass) {
         this.constructPos = constructPos;
-        this.position = new double[]{0,0};
+        this.position = constructPos;
         this.velocity = new double[]{0,0};
         this.forces = new double[]{0,0};
         this.mass = mass;
