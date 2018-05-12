@@ -1,6 +1,7 @@
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import physics.Integration;
 import physics.model.*;
 
 import java.nio.*;
@@ -19,8 +20,10 @@ public class Main {
     private static final int HEIGHT = 512;
     private static final double KS = 0.01;
     private static final double KD = 0.01;
+    private static final double DELTA = 0.1;
 
     private long window;
+    private int method;
 
     private List<Particle2D> particles;
     private List<Force> forces;
@@ -116,17 +119,16 @@ public class Main {
         }
     }
 
-
     /**
      * Called once at the start of the simulation.
      */
     private void loadElements() {
+        method = Integration.RUNGE_KUTA;
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         particles.add(new Particle2D(new double[]{0,0}, 3.0));
-        particles.add(new Particle2D(new double[]{0.5,0}, 2.0));
-        forces.add(new SpringForce2D(particles.get(0), particles.get(1), KS, KD, 0.1));
+        constraints.add(new CircularConstraint2D(particles.get(0), new double[]{1,1}, 1));
     }
 
     /**
@@ -134,6 +136,11 @@ public class Main {
      * @param time Milliseconds since the simulation started.
      */
     private void simulate(double time) {
+        updateParticles();
+        draw(); // Draw all particles, forces and constraints.
+    }
+
+    private void updateParticles() {
         // Clear force accumulators
         for (Particle particle : particles) particle.setForces(new double[]{0,0});
 
@@ -143,13 +150,8 @@ public class Main {
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, KS, KD);
 
-        // Update all particles state
-        for (Particle particle : particles) {
-            Particle.updateVelocity(particle, time);
-            Particle.updatePosition(particle, time);
-        }
-
-        draw(); // Draw all particles, forces and constraints.
+        // Update all particle's state
+        Integration.apply(particles, DELTA, method);
     }
 
     private void draw() {
