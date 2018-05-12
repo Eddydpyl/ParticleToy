@@ -18,6 +18,11 @@ public class CircularConstraint2D implements Constraint {
     }
 
     @Override
+    public Particle[] getParticles() {
+        return new Particle[]{p};
+    }
+
+    @Override
     public double calculateC0() {
         double[] posDiff = vecDiff(p.getPosition(), center);
         return vecDot(posDiff, posDiff) - radius * radius;

@@ -13,7 +13,17 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-dsparse:0.34"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.ejml:ejml-simple:0.34"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl:3.1.6"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-opengl:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-assimp:3.1.6"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-glfw:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-openal:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-opencl:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-opengl:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-stb:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl:natives-windows:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-assimp:natives-windows:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-glfw:natives-windows:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-openal:natives-windows:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-opengl:natives-windows:3.1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Maven: org.lwjgl:lwjgl-stb:natives-windows:3.1.6"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

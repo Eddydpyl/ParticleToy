@@ -15,7 +15,17 @@
 		<level name="Maven: org.ejml:ejml-dsparse:0.34" value="project"/>
 		<level name="Maven: org.ejml:ejml-simple:0.34" value="project"/>
 		<level name="Maven: org.lwjgl:lwjgl:3.1.6" value="project"/>
-		<level name="Maven: org.lwjgl:lwjgl-opengl:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-assimp:3.1.6" value="project"/>
 		<level name="Maven: org.lwjgl:lwjgl-glfw:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-openal:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-opencl:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-opengl:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-stb:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-assimp:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-glfw:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-openal:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-opengl:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl:lwjgl-stb:natives-windows:3.1.6" value="project"/>
 	</levels>
 </component>
