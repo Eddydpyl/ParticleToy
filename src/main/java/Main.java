@@ -100,7 +100,10 @@ public class Main {
 
         // Remember the start time.
         long startTime = System.nanoTime();
-
+        
+        //set cursor mode
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        
         // Run the rendering loop until the user has attempted to close the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -113,13 +116,25 @@ public class Main {
             double diff = (currentTime - startTime) / 1E6f;
 
             simulate(diff); // Draw the scene.
-
+            
+            
+            int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+            if (state == GLFW_PRESS) {
+                MouseInteract();
+            }
+            
+            
             glfwSwapBuffers(window); // swap the color buffers
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
         }
     }
 
-    /**
+    private void MouseInteract() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
      * Called once at the start of the simulation.
      */
     private void loadElements() {
