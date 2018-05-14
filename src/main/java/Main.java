@@ -134,15 +134,13 @@ public class Main {
     	DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
     	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
     	glfwGetCursorPos(window, xpos, ypos);
-    	double[] position = new double[] {xpos.get()/1000, -ypos.get()/1000};
-    	Particle2D p2 =  new Particle2D(position,1000000);
-    	double distance = 0.0;
+    	double[] position = new double[] {xpos.get()/800, 1-ypos.get()/500};
     	for (Particle2D particle : particles) {
-    		distance = Math.sqrt(Math.pow(particle.getPosition()[0]-p2.getPosition()[0],2)+Math.pow(particle.getPosition()[1]-p2.getPosition()[1],2));
-    		SpringForce2D force = new SpringForce2D(particle,p2,KS,KD,distance);
-    		force.apply();
-    		force.draw();
+    		System.out.println("particle: " + particle.getPosition()[0]+","+particle.getPosition()[1]);;
     	}
+    	Particle2D p = new Particle2D(position, 0.1);
+    	particles.add(p);
+    	System.out.println("mouse: " + position[0]+","+position[1]);;
 	}
 
 	/**
