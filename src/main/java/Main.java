@@ -2,6 +2,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import org.lwjgl.util.glu.GLU;
+
 import physics.Integration;
 import physics.model.*;
 
@@ -134,13 +136,25 @@ public class Main {
     	DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
     	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
     	glfwGetCursorPos(window, xpos, ypos);
-    	double[] position = new double[] {xpos.get()/800, 1-ypos.get()/500};
-    	for (Particle2D particle : particles) {
+    	float winX = (float) (xpos.get());
+    	float winY = (float) (500-ypos.get());
+    	IntBuffer viewport = BufferUtils.createIntBuffer(16);
+    	FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
+    	FloatBuffer projection = BufferUtils.createFloatBuffer(16);
+    	FloatBuffer position = BufferUtils.createFloatBuffer(3);
+    	GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelview);
+    	GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
+    	GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);   
+    	 
+    	float winZ = (float) 0;
+    	GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
+    	double[] pos = new double[]{position.get(0),position.get(1)};
+     	for (Particle2D particle : particles) {
     		System.out.println("particle: " + particle.getPosition()[0]+","+particle.getPosition()[1]);;
     	}
-    	Particle2D p = new Particle2D(position, 0.1);
-    	particles.add(p);
-    	System.out.println("mouse: " + position[0]+","+position[1]);;
+    	Particle2D p = new Particle2D(pos, 0.1);
+    	p.draw();
+    	System.out.println("mouse: " + pos[0]+","+pos[1]);;
 	}
 
 	/**
