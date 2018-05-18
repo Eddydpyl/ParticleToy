@@ -122,9 +122,13 @@ public class Main {
             simulate(diff); // Draw the scene.
             
             
-            int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-            if (state == GLFW_PRESS) {
+            int state1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+            int state2 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+            if (state1 == GLFW_PRESS) {
                 MouseInteract();
+            }
+            if (state2 == GLFW_PRESS) {
+                MouseSpring();
             }
             
             
@@ -155,6 +159,34 @@ public class Main {
     			particle.setPosition(pos);
     			particle.setVelocity(new double[]{0,0});
     		}
+    	}
+    	
+	}
+    
+    private void MouseSpring() {
+    	DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
+    	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
+    	glfwGetCursorPos(window, xpos, ypos);
+    	float winX = (float) (xpos.get());
+    	float winY = (float) (HEIGHT-ypos.get());
+    	IntBuffer viewport = BufferUtils.createIntBuffer(16);
+    	FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
+    	FloatBuffer projection = BufferUtils.createFloatBuffer(16);
+    	FloatBuffer position = BufferUtils.createFloatBuffer(3);
+    	GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelview);
+    	GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
+    	GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);   
+    	 
+    	float winZ = (float) 0;
+    	GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
+    	double[] pos = new double[]{position.get(0),position.get(1)};
+    	Particle2D p = new Particle2D(pos, 10);
+    	p.draw();
+     	for (Particle2D particle : particles) {
+     		double distance = Math.sqrt(Math.pow((pos[0]-particle.getPosition()[0]),2)+Math.pow((pos[1]-particle.getPosition()[1]),2));
+    		SpringForce2D f = new SpringForce2D(particle, p, KS, KD, distance);
+    		f.draw();
+    		f.apply();
     	}
     	
 	}
