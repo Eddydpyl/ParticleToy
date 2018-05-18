@@ -1,14 +1,16 @@
 package physics.model;
 
+import java.util.List;
+
 import static physics.LinearSolver.*;
 
 public class GravityForce2D implements Force {
 
     private static final double G = 9.8;
 
-    private Particle2D[] particles;
+    private List<Particle2D> particles;
 
-    public GravityForce2D(Particle2D... particles) {
+    public GravityForce2D(List<Particle2D> particles) {
         this.particles = particles;
     }
 

@@ -23,7 +23,7 @@ public class SpringForce2D implements Force {
         double[] posDiff = vecDiff(p1.getPosition(), p2.getPosition());
         double[] velDiff = vecDiff(p1.getVelocity(), p2.getVelocity());
         double module = vecModule(posDiff);
-        double magnitude = (ks * (module - distance) + kd * (vecDot(posDiff, velDiff) / module)) / module;
+        double magnitude = ks * (module - distance) + kd * vecDot(posDiff, velDiff);
         double[] spring = vecTimesScalar(posDiff, magnitude);
         p1.setForces(vecDiff(p1.getForces(), spring));
         p2.setForces(vecAdd(p2.getForces(), spring));
@@ -31,7 +31,7 @@ public class SpringForce2D implements Force {
 
     @Override
     public void draw() {
-        glBegin( GL_LINES );
+        glBegin(GL_LINES);
         glColor3d(0.6, 0.7, 0.8);
         glVertex2d(p1.getPosition()[0], p1.getPosition()[1]);
         glColor3d(0.6, 0.7, 0.8);

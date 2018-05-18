@@ -15,7 +15,6 @@ public interface Particle {
     }
 
     double[] getConstructPos();
-    void setConstructPos(double[] constructPos);
     double[] getPosition();
     void setPosition(double[] position);
     double[] getVelocity();
@@ -24,6 +23,8 @@ public interface Particle {
     void setForces(double[] forces);
     double getMass();
     void setMass(double mass);
+
+    void clearForces();
     void reset();
     void draw();
 
