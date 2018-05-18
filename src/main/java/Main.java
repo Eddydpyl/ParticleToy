@@ -24,6 +24,7 @@ public class Main {
     private static final double KS = 0.01;
     private static final double KD = 0.01;
     private static final double DELTA = 0.1;
+    private static final double EPSILON = 0.1;
 
     private long window;
     private int method;
@@ -150,11 +151,12 @@ public class Main {
     	GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
     	double[] pos = new double[]{position.get(0),position.get(1)};
      	for (Particle2D particle : particles) {
-    		System.out.println("particle: " + particle.getPosition()[0]+","+particle.getPosition()[1]);;
+    		if(Math.abs(particle.getPosition()[0]-pos[0])<=EPSILON && Math.abs(particle.getPosition()[1]-pos[1])<=EPSILON) {
+    			particle.setPosition(pos);
+    			particle.setVelocity(new double[]{0,0});
+    		}
     	}
-    	Particle2D p = new Particle2D(pos, 0.1);
-    	p.draw();
-    	System.out.println("mouse: " + pos[0]+","+pos[1]);;
+    	
 	}
 
 	/**
