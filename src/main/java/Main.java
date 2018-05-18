@@ -26,7 +26,7 @@ public class Main {
     private static final double KS = 0.1;
     private static final double KD = 0.1;
     private static final double DELTA = 0.01;
-    private static final double EPISLON = 0.1;
+    private static final double EPSILON = 0.1;
 
     private long window;
     private int method;
