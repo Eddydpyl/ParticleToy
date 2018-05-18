@@ -11,6 +11,7 @@ public class Particle2D implements Particle {
     private double mass;
 
     public Particle2D(double[] constructPos, double mass) {
+        checkPosition(constructPos);
         this.constructPos = constructPos;
         this.position = constructPos;
         this.velocity = new double[]{0,0};
@@ -19,6 +20,8 @@ public class Particle2D implements Particle {
     }
 
     public Particle2D(double[] constructPos, double[] position, double[] velocity, double[] forces, double mass) {
+        checkPosition(constructPos);
+        checkPosition(position);
         this.constructPos = constructPos;
         this.position = position;
         this.velocity = velocity;
@@ -26,12 +29,23 @@ public class Particle2D implements Particle {
         this.mass = mass;
     }
 
+    private void checkPosition(double[] position) {
+        if (position.length != 2) throw new IllegalArgumentException();
+    }
+
+    @Override
     public void reset() {
         this.position = constructPos;
         this.velocity = new double[]{0,0};
+        clearForces();
+    }
+
+    @Override
+    public void clearForces() {
         this.forces = new double[]{0,0};
     }
 
+    @Override
     public void draw() {
         final double h = 0.03;
         glColor3f(1.f, 1.f, 1.f);
@@ -47,15 +61,12 @@ public class Particle2D implements Particle {
         return constructPos;
     }
 
-    public void setConstructPos(double[] constructPos) {
-        this.constructPos = constructPos;
-    }
-
     public double[] getPosition() {
         return position;
     }
 
     public void setPosition(double[] position) {
+        checkPosition(position);
         this.position = position;
     }
 
@@ -82,5 +93,7 @@ public class Particle2D implements Particle {
     public void setMass(double mass) {
         this.mass = mass;
     }
+
+
 
 }

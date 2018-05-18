@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 public interface Constraint {
 
     static void apply(List<? extends Particle> particles, List<Constraint> constraints, double ks, double kd) {
+        if (constraints.isEmpty() || particles.isEmpty()) return;
         if (particles.stream().filter(distinctByKey((Particle p) -> p.getConstructPos().length)).limit(2).count() > 1)
             throw new IllegalArgumentException("The input contained particles with a different number of dimensions.");
 
@@ -49,7 +50,7 @@ public interface Constraint {
 
         // (J0 * W * J0T) * lambda = - (J1 * q1) - (J * W * QT) - (ks * C0) - (kd * C1)
         SimpleMatrix A = J0.mult(W).mult(J0.transpose());
-        SimpleMatrix B = J1.mult(q1.transpose()).plus(J0.mult(W).mult(Q.transpose())).plus(C0ks).plus(C1kd).negative();
+        SimpleMatrix B = J1.mult(q1.transpose()).plus(J0.mult(W).mult(Q.transpose())).plus(C0ks.transpose()).plus(C1kd.transpose()).negative();
         SimpleMatrix lambda = A.solve(B);
 
         // QH = J0 * lambda

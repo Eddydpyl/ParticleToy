@@ -7,14 +7,28 @@ import static physics.LinearSolver.*;
 
 public class CircularConstraint2D implements Constraint {
 
+    private static final double SMALL_VALUE = 0.0000000001;
+
     private Particle2D p;
     private double[] center;
     private double radius;
 
     public CircularConstraint2D(Particle2D p, double[] center, double radius) {
+        checkDistance(p, center);
         this.p = p;
-        this.center = center;
+        this.center = checkCenter(center);
         this.radius = radius;
+    }
+
+    private void checkDistance(Particle particle, double[] center) {
+        if (vecDiff(particle.getPosition(), center) == new double[]{0.0, 0.0})
+            throw new IllegalArgumentException("The particle and center can not be at the same coordinates.");
+    }
+
+    private double[] checkCenter(double[] center) {
+        for (int i = 0; i < center.length; i++) {
+            if (center[i] == 0) center[i] = SMALL_VALUE;
+        } return center;
     }
 
     @Override

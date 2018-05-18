@@ -2,6 +2,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import physics.Integration;
+import physics.model.*;
 import org.lwjgl.util.glu.GLU;
 
 import physics.Integration;
@@ -19,12 +21,12 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
 
-    private static final int WIDTH = 512;
-    private static final int HEIGHT = 512;
-    private static final double KS = 0.01;
-    private static final double KD = 0.01;
-    private static final double DELTA = 0.1;
-    private static final double EPSILON = 0.1;
+    private static final int WIDTH = 1024;
+    private static final int HEIGHT = 800;
+    private static final double KS = 0.1;
+    private static final double KD = 0.1;
+    private static final double DELTA = 0.01;
+    private static final double EPISLON = 0.1;
 
     private long window;
     private int method;
@@ -64,7 +66,7 @@ public class Main {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         // Create the window
-        window = glfwCreateWindow(800, 500, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -195,12 +197,11 @@ public class Main {
      * Called once at the start of the simulation.
      */
     private void loadElements() {
-        method = Integration.RUNGE_KUTA;
+       method = Integration.RUNGE_KUTA;
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        particles.add(new Particle2D(new double[]{0,0}, 3.0));
-        constraints.add(new CircularConstraint2D(particles.get(0), new double[]{1,1}, 1));
+        createCloth2D(4, 4, 0.2, 0.0001);
     }
 
     /**
@@ -214,15 +215,14 @@ public class Main {
 
     private void updateParticles() {
         // Clear force accumulators
-        for (Particle particle : particles) particle.setForces(new double[]{0,0});
-
+        for (Particle particle : particles) particle.clearForces();
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
 
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, KS, KD);
 
-        // Update all particle's state
+        // Update all the particles' state
         Integration.apply(particles, DELTA, method);
     }
 
@@ -230,6 +230,30 @@ public class Main {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
+    }
+        /**
+     *
+     * @param width Number of particles across the cloth.
+     * @param height Number of particles down the cloth.
+     * @param distance Space between each particle and its neighbors.
+     * @param mass Weight of all of the particles.
+     */
+    private void createCloth2D(int width, int height, double distance, double mass) {
+        if (width <= 1 || height <= 1) throw new IllegalArgumentException();
+        double[] rightFix = new double[]{(width / 2) * distance, (height / 2) * distance};
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+            }
+        }
+        for (int i = 0; i < particles.size(); i++) {
+            if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), KS, KD, distance));
+            if ((i + height) < particles.size()) forces.add(new SpringForce2D(particles.get(i), particles.get(i+height), KS, KD, distance));
+        } forces.add(new GravityForce2D(particles));
+        for (int i = 0; i < width; i++) {
+            Particle2D particle = particles.get(i * height);
+            constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
+        }
     }
 
 }
