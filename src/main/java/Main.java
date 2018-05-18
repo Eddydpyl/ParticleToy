@@ -138,7 +138,7 @@ public class Main {
     	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
     	glfwGetCursorPos(window, xpos, ypos);
     	float winX = (float) (xpos.get());
-    	float winY = (float) (500-ypos.get());
+    	float winY = (float) (HEIGHT-ypos.get());
     	IntBuffer viewport = BufferUtils.createIntBuffer(16);
     	FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
     	FloatBuffer projection = BufferUtils.createFloatBuffer(16);
