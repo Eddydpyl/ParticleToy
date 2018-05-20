@@ -5,6 +5,9 @@
 		<testFolder url="file://$MODULE_DIR$/src/test/java"/>
 		<excludeFolder url="file://$MODULE_DIR$/target"/>
 	</contentEntry>
+	<lib name="Maven: net.java.jinput:jinput-platform:natives-linux:2.0.5" scope="RUNTIME"/>
+	<lib name="Maven: net.java.jinput:jinput-platform:natives-windows:2.0.5" scope="RUNTIME"/>
+	<lib name="Maven: net.java.jinput:jinput-platform:natives-osx:2.0.5" scope="RUNTIME"/>
 	<levels>
 		<level name="Maven: org.ejml:ejml-all:0.34" value="project"/>
 		<level name="Maven: org.ejml:ejml-core:0.34" value="project"/>
@@ -27,5 +30,15 @@
 		<level name="Maven: org.lwjgl:lwjgl-openal:natives-windows:3.1.6" value="project"/>
 		<level name="Maven: org.lwjgl:lwjgl-opengl:natives-windows:3.1.6" value="project"/>
 		<level name="Maven: org.lwjgl:lwjgl-stb:natives-windows:3.1.6" value="project"/>
+		<level name="Maven: org.lwjgl.lwjgl:lwjgl_util:2.9.3" value="project"/>
+		<level name="Maven: org.lwjgl.lwjgl:lwjgl:2.9.3" value="project"/>
+		<level name="Maven: org.lwjgl.lwjgl:lwjgl-platform:natives-windows:2.9.3" value="project"/>
+		<level name="Maven: org.lwjgl.lwjgl:lwjgl-platform:natives-linux:2.9.3" value="project"/>
+		<level name="Maven: org.lwjgl.lwjgl:lwjgl-platform:natives-osx:2.9.3" value="project"/>
+		<level name="Maven: net.java.jinput:jinput:2.0.5" value="project"/>
+		<level name="Maven: net.java.jutils:jutils:1.0.0" value="project"/>
+		<level name="Maven: net.java.jinput:jinput-platform:natives-linux:2.0.5" value="project"/>
+		<level name="Maven: net.java.jinput:jinput-platform:natives-windows:2.0.5" value="project"/>
+		<level name="Maven: net.java.jinput:jinput-platform:natives-osx:2.0.5" value="project"/>
 	</levels>
 </component>

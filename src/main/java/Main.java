@@ -25,7 +25,7 @@ public class Main {
     private static final int HEIGHT = 800;
     private static final double KS = 0.1;
     private static final double KD = 0.1;
-    private static final double DELTA = 0.01;
+    private static final double DELTA = 0.001;
     private static final double EPSILON = 0.1;
 
     private long window;
@@ -34,6 +34,9 @@ public class Main {
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
+
+    private Particle2D mouseParticle;
+    private Force mouseSpring;
 
     public static void main(String[] args) {
         new Main().run();
@@ -106,10 +109,10 @@ public class Main {
 
         // Remember the start time.
         long startTime = System.nanoTime();
-        
+
         //set cursor mode
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        
+
         // Run the rendering loop until the user has attempted to close the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
@@ -122,82 +125,60 @@ public class Main {
             double diff = (currentTime - startTime) / 1E6f;
 
             simulate(diff); // Draw the scene.
-            
-            
-            int state1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-            int state2 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-            if (state1 == GLFW_PRESS) {
-                MouseInteract();
-            }
-            if (state2 == GLFW_PRESS) {
-                MouseSpring();
-            }
-            
-            
-            glfwSwapBuffers(window); // swap the color buffers
+
+            // Mouse interaction.
+            int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+            MouseSpring(state);
+
+            glfwSwapBuffers(window); // Swap the color buffers.
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
         }
     }
 
-    private void MouseInteract() {
-    	DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
-    	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
-    	glfwGetCursorPos(window, xpos, ypos);
-    	float winX = (float) (xpos.get());
-    	float winY = (float) (HEIGHT-ypos.get());
-    	IntBuffer viewport = BufferUtils.createIntBuffer(16);
-    	FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
-    	FloatBuffer projection = BufferUtils.createFloatBuffer(16);
-    	FloatBuffer position = BufferUtils.createFloatBuffer(3);
-    	GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelview);
-    	GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
-    	GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);   
-    	 
-    	float winZ = (float) 0;
-    	GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
-    	double[] pos = new double[]{position.get(0),position.get(1)};
-     	for (Particle2D particle : particles) {
-    		if(Math.abs(particle.getPosition()[0]-pos[0])<=EPSILON && Math.abs(particle.getPosition()[1]-pos[1])<=EPSILON) {
-    			particle.setPosition(pos);
-    			particle.setVelocity(new double[]{0,0});
-    		}
-    	}
-    	
-	}
-    
-    private void MouseSpring() {
-    	DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
-    	DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
-    	glfwGetCursorPos(window, xpos, ypos);
-    	float winX = (float) (xpos.get());
-    	float winY = (float) (HEIGHT-ypos.get());
-    	IntBuffer viewport = BufferUtils.createIntBuffer(16);
-    	FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
-    	FloatBuffer projection = BufferUtils.createFloatBuffer(16);
-    	FloatBuffer position = BufferUtils.createFloatBuffer(3);
-    	GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelview);
-    	GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
-    	GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);   
-    	 
-    	float winZ = (float) 0;
-    	GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
-    	double[] pos = new double[]{position.get(0),position.get(1)};
-    	Particle2D p = new Particle2D(pos, 10);
-    	p.draw();
-     	for (Particle2D particle : particles) {
-     		double distance = Math.sqrt(Math.pow((pos[0]-particle.getPosition()[0]),2)+Math.pow((pos[1]-particle.getPosition()[1]),2));
-    		SpringForce2D f = new SpringForce2D(particle, p, KS, KD, distance);
-    		f.draw();
-    		f.apply();
-    	}
-    	
-	}
+    private void MouseSpring(int state) {
+        if (state == GLFW_PRESS) {
+            DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
+            DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
+            glfwGetCursorPos(window, xpos, ypos);
+            float winX = (float) (xpos.get());
+            float winY = (float) (HEIGHT-ypos.get());
+            IntBuffer viewport = BufferUtils.createIntBuffer(16);
+            FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
+            FloatBuffer projection = BufferUtils.createFloatBuffer(16);
+            FloatBuffer position = BufferUtils.createFloatBuffer(3);
+            GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelview);
+            GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
+            GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
 
-	/**
+            float winZ = (float) 0;
+            GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
+            double[] pos = new double[]{position.get(0),position.get(1)};
+            Particle2D mouse = new Particle2D(pos, 1);
+            if (mouseParticle == null) {
+                for (Particle2D particle : particles) {
+                    double distance = Math.sqrt(Math.pow((pos[0]-particle.getPosition()[0]),2)+Math.pow((pos[1]-particle.getPosition()[1]),2));
+                    if (distance <= EPSILON) {
+                        mouseParticle = particle;
+                    }
+                }
+            }
+            if (mouseParticle != null) {
+                if (mouseSpring != null) forces.remove(mouseSpring);
+                mouseSpring = new SpringForce2D(mouseParticle, mouse, KS, KD, 0);
+                forces.add(mouseSpring);
+            }
+        } else if (state == GLFW_RELEASE) {
+            if (mouseSpring != null) forces.remove(mouseSpring);
+            mouseSpring = null;
+            mouseParticle = null;
+        }
+    }
+
+    /**
      * Called once at the start of the simulation.
      */
     private void loadElements() {
-       method = Integration.RUNGE_KUTA;
+        method = Integration.RUNGE_KUTA;
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
@@ -231,7 +212,7 @@ public class Main {
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
     }
-        /**
+    /**
      *
      * @param width Number of particles across the cloth.
      * @param height Number of particles down the cloth.
