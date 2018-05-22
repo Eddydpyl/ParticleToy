@@ -44,6 +44,8 @@ public class Main {
 
     private void run() {
         init();
+        Runnable r = new CaptureRectangularArea();
+        r.run();
         loop();
 
         // Free the window callbacks and destroy the window
