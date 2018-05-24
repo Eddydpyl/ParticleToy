@@ -37,7 +37,9 @@ public class Main {
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
-
+    
+    private int featureOn = 1;
+    
     public static void main(String[] args) {
         new Main().run();
     }
@@ -93,7 +95,7 @@ public class Main {
         glfwMakeContextCurrent(window); // Make the OpenGL context current
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible
-        loadElements();
+        loadHairElements();
     }
 
     private void loop() {
@@ -129,7 +131,15 @@ public class Main {
             // Mouse interaction.
             int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
             MouseSpring(state);
-
+            //keyboard swtich
+            int key1State = glfwGetKey(window, GLFW_KEY_1);
+            if (key1State == GLFW_PRESS) {
+            	loadClothElements();
+            }
+            int key2State = glfwGetKey(window, GLFW_KEY_2);
+            if (key2State == GLFW_PRESS) {
+            	loadHairElements();
+            }
             glfwSwapBuffers(window); // Swap the color buffers.
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
         }
@@ -177,12 +187,19 @@ public class Main {
     /**
      * Called once at the start of the simulation.
      */
-    private void loadElements() {
+    private void loadClothElements() {
         method = Integration.RUNGE_KUTA;
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         createCloth2D(4, 4, 0.2, 0.0001);
+    }
+    private void loadHairElements() {
+        method = Integration.RUNGE_KUTA;
+        particles = new ArrayList<>();
+        forces = new ArrayList<>();
+        constraints = new ArrayList<>();
+        createHair2D(21, 0.1, 0.0001);
     }
 
     /**
@@ -234,6 +251,25 @@ public class Main {
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
+        }
+    }
+    private void createHair2D(int width, double distance, double mass) {
+        if (width <= 1) throw new IllegalArgumentException();
+        double[] rightFix = new double[]{(width / 2) * distance,-0.5*distance};
+        for (int i = 0; i < width; i++) {
+            particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] + (i%2) * 6*distance}, mass));
+        }
+        for (int i = 0; i < particles.size()-1; i++) {
+        	forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), KS, KD, 6*distance));
+            	
+            if ((i % 2 == 0 && i+2 < particles.size())) {
+            	forces.add(new SpringForce2D(particles.get(i), particles.get(i+2), KS, KD, distance));
+            } 
+        }
+        forces.add(new GravityForce2D(particles));
+        for (int i = 0; i <= width/2; i++) {
+            Particle2D particle = particles.get(i*2);
+            constraints.add(new CircularConstraint2D(particles.get(i * 2), new double[]{particle.getPosition()[0]+0.01, particle.getPosition()[1]}, 0));
         }
     }
 
