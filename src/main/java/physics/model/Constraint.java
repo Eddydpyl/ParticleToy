@@ -48,7 +48,7 @@ public interface Constraint {
             }
         }
 
-        // (J0 * W * J0T) * lambda = - (J1 * q1) - (J * W * QT) - (ks * C0) - (kd * C1)
+        // (J0 * W * J0T) * lambda = - (J1 * q1) - (J0 * W * QT) - (ks * C0) - (kd * C1)
         SimpleMatrix A = J0.mult(W).mult(J0.transpose());
         SimpleMatrix B = J1.mult(q1.transpose()).plus(J0.mult(W).mult(Q.transpose())).plus(C0ks.transpose()).plus(C1kd.transpose()).negative();
         SimpleMatrix lambda = A.solve(B);
