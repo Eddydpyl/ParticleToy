@@ -25,7 +25,7 @@ public class Main {
     private static final int HEIGHT = 800;
     private static final double KS = 0.1;
     private static final double KD = 0.1;
-    private static final double DELTA = 0.001;
+    private static final double DELTA = 0.002;
     private static final double EPSILON = 0.1;
 
     private long window;
@@ -34,6 +34,7 @@ public class Main {
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
+    private List<Solid> solids;
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
@@ -182,6 +183,7 @@ public class Main {
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
+        solids = new ArrayList<>();
         createCloth2D(4, 4, 0.2, 0.0001);
     }
 
@@ -195,8 +197,12 @@ public class Main {
     }
 
     private void updateParticles() {
+        // Collisions
+        for (Solid solid : solids) solid.apply();
+
         // Clear force accumulators
         for (Particle particle : particles) particle.clearForces();
+
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
 
@@ -211,6 +217,7 @@ public class Main {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
+        for (Solid solid : solids) solid.draw();
     }
     /**
      *
@@ -235,6 +242,7 @@ public class Main {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
+        solids.add(new Wall(particles, new double[]{0,-0.3}, new double[]{0,1}, 1, 0.001));
     }
 
 }
