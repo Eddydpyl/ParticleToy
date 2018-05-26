@@ -23,9 +23,9 @@ public class Main {
 
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 800;
-    private static final double KS = 0.1;
-    private static final double KD = 0.1;
-    private static final double DELTA = 0.001;
+    private static final double KS = 5;
+    private static final double KD = 5;
+    private static final double DELTA = 0.005;
     private static final double EPSILON = 0.1;
 
     private long window;
@@ -38,7 +38,6 @@ public class Main {
     private Particle2D mouseParticle;
     private Force mouseSpring;
     
-    private int featureOn = 1;
     
     public static void main(String[] args) {
         new Main().run();
@@ -96,6 +95,7 @@ public class Main {
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible
         loadHairElements();
+      
     }
 
     private void loop() {
@@ -192,14 +192,15 @@ public class Main {
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        createCloth2D(4, 4, 0.2, 0.0001);
+        createCloth2D(4, 4, 0.2, 1);
     }
     private void loadHairElements() {
         method = Integration.RUNGE_KUTA;
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        createHair2D(21, 0.1, 0.0001);
+        createHair2D(6,2, 0.2, 1);
+//        createSingleHair(new double[] {0, 0}, 0.1);
     }
 
     /**
@@ -253,24 +254,34 @@ public class Main {
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
     }
-    private void createHair2D(int width, double distance, double mass) {
+    private void createHair2D(int width, int height,double distance, double mass) {
         if (width <= 1) throw new IllegalArgumentException();
-        double[] rightFix = new double[]{(width / 2) * distance,-0.5*distance};
+        double[] rightFix = new double[]{(width / 2) * distance,(height/2)*3*distance};
         for (int i = 0; i < width; i++) {
-            particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] + (i%2) * 6*distance}, mass));
+        	for(int j = 0; j< height;j++) {
+        		createSingleHair(new double[]{rightFix[0] - i * distance, rightFix[1] - j * 3*distance}, mass);
+        	}
+            
         }
-        for (int i = 0; i < particles.size()-1; i++) {
-        	forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), KS, KD, 6*distance));
-            	
-            if ((i % 2 == 0 && i+2 < particles.size())) {
-            	forces.add(new SpringForce2D(particles.get(i), particles.get(i+2), KS, KD, distance));
-            } 
-        }
-        forces.add(new GravityForce2D(particles));
-        for (int i = 0; i <= width/2; i++) {
-            Particle2D particle = particles.get(i*2);
-            constraints.add(new CircularConstraint2D(particles.get(i * 2), new double[]{particle.getPosition()[0]+0.01, particle.getPosition()[1]}, 0));
-        }
+    }
+    private void createSingleHair(double[] pos,double mass) {
+    	
+    	Particle2D p1 = new Particle2D(pos, mass);
+    	double[]pos2 = new double[] {pos[0]-0.1,pos[1]-0.89};
+    	Particle2D p2 = new Particle2D(pos2, mass);
+    	double[]pos3 = new double[] {pos[0]+0.1,pos[1]-0.89};
+    	Particle2D p3 = new Particle2D(pos3, mass);
+    	particles.add(p1);
+    	particles.add(p2);
+    	particles.add(p3);
+    	forces.add(new AngularSpringForce2D(p2, p3, p1,0.2,0.2,60));
+    	forces.add(new AngularSpringForce2D(p3, p1, p2,0.2,0.2,60));
+    	forces.add(new SpringForce2D(p1, p2, KS, KD, 0.4));
+    	forces.add(new SpringForce2D(p1, p3, KS, KD, 0.4));
+    	forces.add(new SpringForce2D(p2, p3, KS, KD, 0.2));
+//    	forces.add(new GravityForce2D(particles));
+    	constraints.add(new CircularConstraint2D(p2, new double[] {p2.getPosition()[0],p2.getPosition()[1]+0.01},0));
+    	constraints.add(new CircularConstraint2D(p3, new double[] {p3.getPosition()[0],p3.getPosition()[1]+0.01},0));
     }
 
 }
