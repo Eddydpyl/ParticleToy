@@ -9,13 +9,13 @@ public class CircularConstraint2D implements Constraint {
 
     private static final double SMALL_VALUE = 0.0000000001;
 
-    private Particle2D p;
+    private Particle2D particle;
     private double[] center;
     private double radius;
 
-    public CircularConstraint2D(Particle2D p, double[] center, double radius) {
-        checkDistance(p, center);
-        this.p = p;
+    public CircularConstraint2D(Particle2D particle, double[] center, double radius) {
+        checkDistance(particle, center);
+        this.particle = particle;
         this.center = checkCenter(center);
         this.radius = radius;
     }
@@ -33,30 +33,30 @@ public class CircularConstraint2D implements Constraint {
 
     @Override
     public Particle[] getParticles() {
-        return new Particle[]{p};
+        return new Particle[]{particle};
     }
 
     @Override
     public double calculateC0() {
-        double[] posDiff = vecDiff(p.getPosition(), center);
+        double[] posDiff = vecDiff(particle.getPosition(), center);
         return vecDot(posDiff, posDiff) - radius * radius;
     }
 
     @Override
     public double calculateC1() {
-        double[] posDiff = vecDiff(p.getPosition(), center);
-        return 2 * vecDot(posDiff, p.getVelocity());
+        double[] posDiff = vecDiff(particle.getPosition(), center);
+        return 2 * vecDot(posDiff, particle.getVelocity());
     }
 
     @Override
     public double[][] calculateJ0() {
-        double[] posDiff = vecDiff(p.getPosition(), center);
+        double[] posDiff = vecDiff(particle.getPosition(), center);
         return new double[][]{vecTimesScalar(posDiff, 2)};
     }
 
     @Override
     public double[][] calculateJ1() {
-        return new double[][]{vecTimesScalar(p.getVelocity(), 2)};
+        return new double[][]{vecTimesScalar(particle.getVelocity(), 2)};
     }
 
     @Override

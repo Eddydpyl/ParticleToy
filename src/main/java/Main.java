@@ -6,9 +6,6 @@ import physics.Integration;
 import physics.model.*;
 import org.lwjgl.util.glu.GLU;
 
-import physics.Integration;
-import physics.model.*;
-
 import java.nio.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +20,9 @@ public class Main {
 
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 800;
-    private static final double KS = 0.1;
-    private static final double KD = 0.1;
-    private static final double DELTA = 0.001;
+    private static final double KS = 0.5;
+    private static final double KD = 0.5;
+    private static final double DELTA = 0.003;
     private static final double EPSILON = 0.1;
 
     private long window;
@@ -34,6 +31,7 @@ public class Main {
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
+    private List<Solid> solids;
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
@@ -182,7 +180,8 @@ public class Main {
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        createCloth2D(4, 4, 0.2, 0.0001);
+        solids = new ArrayList<>();
+        createCloth2D(4, 4, 0.2, 0.001);
     }
 
     /**
@@ -195,8 +194,12 @@ public class Main {
     }
 
     private void updateParticles() {
+        // Collisions
+        for (Solid solid : solids) solid.apply();
+
         // Clear force accumulators
         for (Particle particle : particles) particle.clearForces();
+
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
 
@@ -211,6 +214,7 @@ public class Main {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
+        for (Solid solid : solids) solid.draw();
     }
     /**
      *
@@ -221,7 +225,7 @@ public class Main {
      */
     private void createCloth2D(int width, int height, double distance, double mass) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
-        double[] rightFix = new double[]{(width / 2) * distance, (height / 2) * distance};
+        double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
@@ -230,11 +234,20 @@ public class Main {
         for (int i = 0; i < particles.size(); i++) {
             if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), KS, KD, distance));
             if ((i + height) < particles.size()) forces.add(new SpringForce2D(particles.get(i), particles.get(i+height), KS, KD, distance));
-        } forces.add(new GravityForce2D(particles));
+            if ((i + 1) % height > 0 && (i + height + 1) < particles.size())
+                forces.add(new SpringForce2D(particles.get(i), particles.get(i + height + 1), KS, KD, Math.sqrt(2) * distance));
+            if (i % height > 0 && (i + height - 1) < particles.size())
+                forces.add(new SpringForce2D(particles.get(i), particles.get(i + height - 1), KS, KD, Math.sqrt(2) * distance));
+        }
+        forces.add(new GravityForce2D(particles));
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
+        solids.add(new Wall(particles, new double[]{0,-0.5}, new double[]{0,1}, 1, 0.001));
+        solids.add(new Wall(particles, new double[]{0,0.5}, new double[]{0,-1}, 1, 0.001));
+        solids.add(new Wall(particles, new double[]{-0.5,0}, new double[]{1,0}, 1, 0.001));
+        solids.add(new Wall(particles, new double[]{0.5,0}, new double[]{-1,0}, 1, 0.001));
     }
 
 }
