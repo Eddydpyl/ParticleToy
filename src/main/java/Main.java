@@ -31,6 +31,9 @@ public class Main {
     private static final double DELTA = 0.005;
     private static final double EPSILON = 0.1;
 
+    private static final double AKS = 1;
+    private static final double AKD = 1;
+    
     private long window;
     private int method;
     private int zoomLevel;
@@ -101,7 +104,7 @@ public class Main {
         glfwShowWindow(window); // Make the window visible      
 
         reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
-        createCloth2D(4, 4, 0.1, 0.01, false);
+        createHair2D(9, 3, 0.1, 0.01);
     }
 
     private void loop() {
@@ -140,11 +143,15 @@ public class Main {
             //keyboard swtich
             int key1State = glfwGetKey(window, GLFW_KEY_1);
             if (key1State == GLFW_PRESS) {
-            	;
+
+                reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
+                createCloth2D(4, 4, 0.1, 0.01,false);
             }
             int key2State = glfwGetKey(window, GLFW_KEY_2);
             if (key2State == GLFW_PRESS) {
-            	;
+
+                reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
+                createHair2D(9, 3, 0.1, 0.01);
             }
             glfwSwapBuffers(window); // Swap the color buffers.
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
@@ -284,19 +291,18 @@ public class Main {
     private void createSingleHair(double[] pos,double mass) {
     	
     	Particle2D p1 = new Particle2D(pos, mass);
-    	double[]pos2 = new double[] {pos[0]-0.1,pos[1]-0.89};
+    	double[]pos2 = new double[] {pos[0]-0.05,pos[1]-0.3};
     	Particle2D p2 = new Particle2D(pos2, mass);
-    	double[]pos3 = new double[] {pos[0]+0.1,pos[1]-0.89};
+    	double[]pos3 = new double[] {pos[0]+0.05,pos[1]-0.3};
     	Particle2D p3 = new Particle2D(pos3, mass);
     	particles.add(p1);
     	particles.add(p2);
     	particles.add(p3);
-    	forces.add(new AngularSpringForce2D(p2, p3, p1,0.2,0.2,60));
-    	forces.add(new AngularSpringForce2D(p3, p1, p2,0.2,0.2,60));
-    	forces.add(new SpringForce2D(p1, p2, KS, KD, 0.4));
-    	forces.add(new SpringForce2D(p1, p3, KS, KD, 0.4));
-    	forces.add(new SpringForce2D(p2, p3, KS, KD, 0.2));
-//    	forces.add(new GravityForce2D(particles));
+    	forces.add(new AngularSpringForce2D(p2, p3, p1,0.0002,0.0002,60));
+    	forces.add(new AngularSpringForce2D(p3, p1, p2,0.0002,0.0002,60));
+    	forces.add(new SpringForce2D(p1, p2, AKS, AKD, 0.1));
+    	forces.add(new SpringForce2D(p1, p3,AKS, AKD, 0.1));
+    	forces.add(new SpringForce2D(p2, p3, AKS, AKD, 0.05));
     	constraints.add(new CircularConstraint2D(p2, new double[] {p2.getPosition()[0],p2.getPosition()[1]+0.01},0));
     	constraints.add(new CircularConstraint2D(p3, new double[] {p3.getPosition()[0],p3.getPosition()[1]+0.01},0));
     }
