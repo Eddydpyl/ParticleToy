@@ -21,6 +21,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Main {
 
+    private static final int ZOOM_0 = 0;
+    private static final int ZOOM_1 = 1;
+
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 800;
     private static final double KS = 5;
@@ -30,10 +33,12 @@ public class Main {
 
     private long window;
     private int method;
+    private int zoomLevel;
 
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
+    private List<Solid> solids;
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
@@ -93,9 +98,10 @@ public class Main {
         } // the stack frame is popped automatically
         glfwMakeContextCurrent(window); // Make the OpenGL context current
         glfwSwapInterval(1); // Enable v-sync
-        glfwShowWindow(window); // Make the window visible
-        loadHairElements();
-      
+        glfwShowWindow(window); // Make the window visible      
+
+        reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
+        createCloth2D(4, 4, 0.1, 0.01, false);
     }
 
     private void loop() {
@@ -134,11 +140,11 @@ public class Main {
             //keyboard swtich
             int key1State = glfwGetKey(window, GLFW_KEY_1);
             if (key1State == GLFW_PRESS) {
-            	loadClothElements();
+            	;
             }
             int key2State = glfwGetKey(window, GLFW_KEY_2);
             if (key2State == GLFW_PRESS) {
-            	loadHairElements();
+            	;
             }
             glfwSwapBuffers(window); // Swap the color buffers.
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
@@ -185,31 +191,37 @@ public class Main {
     }
 
     /**
-     * Called once at the start of the simulation.
-     */
-    private void loadClothElements() {
-        method = Integration.RUNGE_KUTA;
-        particles = new ArrayList<>();
-        forces = new ArrayList<>();
-        constraints = new ArrayList<>();
-        createCloth2D(4, 4, 0.2, 1);
-    }
-    private void loadHairElements() {
-        method = Integration.RUNGE_KUTA;
-        particles = new ArrayList<>();
-        forces = new ArrayList<>();
-        constraints = new ArrayList<>();
-        createHair2D(6,2, 0.2, 1);
-//        createSingleHair(new double[] {0, 0}, 0.1);
-    }
-
-    /**
      * Called every time a frame is created. Starts with a projection identity matrix enabled by default.
      * @param time Milliseconds since the simulation started.
      */
     private void simulate(double time) {
+        updateZoom();
         updateParticles();
         draw(); // Draw all particles, forces and constraints.
+
+        int key1State = glfwGetKey(window, GLFW_KEY_1);
+        if (key1State == GLFW_PRESS) {
+            reset(Integration.RUNGE_KUTA, ZOOM_0);
+            createCloth2D(4, 4, 0.1, 0.01, false);
+        }
+        int key2State = glfwGetKey(window, GLFW_KEY_2);
+        if (key2State == GLFW_PRESS) {
+            reset(Integration.RUNGE_KUTA, ZOOM_1);
+            createCloth2D(20, 10, 0.1, 0.01, true);
+        }
+    }
+
+    private void reset(int method, int zoomLevel) {
+        this.method = method;
+        this.zoomLevel = zoomLevel;
+        particles = new ArrayList<>();
+        forces = new ArrayList<>();
+        constraints = new ArrayList<>();
+        solids = new ArrayList<>();
+    }
+
+    private void updateZoom() {
+        if (zoomLevel == ZOOM_1) glScaled(0.4,0.4,0);
     }
 
     private void updateParticles() {
@@ -217,6 +229,9 @@ public class Main {
         for (Particle particle : particles) particle.clearForces();
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
+
+        // Collisions
+        for (Solid solid : solids) solid.apply();
 
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, KS, KD);
@@ -229,6 +244,7 @@ public class Main {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
+        for (Solid solid : solids) solid.draw();
     }
     /**
      *
@@ -237,9 +253,9 @@ public class Main {
      * @param distance Space between each particle and its neighbors.
      * @param mass Weight of all of the particles.
      */
-    private void createCloth2D(int width, int height, double distance, double mass) {
+    private void createCloth2D(int width, int height, double distance, double mass, boolean floor) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
-        double[] rightFix = new double[]{(width / 2) * distance, (height / 2) * distance};
+        double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
@@ -253,6 +269,7 @@ public class Main {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
+        if (floor) solids.add(new Floor(particles, new double[]{0,-height*distance}, 1, 0.001));
     }
     private void createHair2D(int width, int height,double distance, double mass) {
         if (width <= 1) throw new IllegalArgumentException();
