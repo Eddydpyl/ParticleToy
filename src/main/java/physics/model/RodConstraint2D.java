@@ -5,8 +5,7 @@ import static physics.LinearSolver.*;
 
 public class RodConstraint2D implements Constraint {
 
-    private Particle2D p1;
-    private Particle2D p2;
+    private Particle2D p1, p2;
     private double distance;
 
     public RodConstraint2D(Particle2D p1, Particle2D p2, double distance) {

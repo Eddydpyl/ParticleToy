@@ -6,9 +6,6 @@ import physics.Integration;
 import physics.model.*;
 import org.lwjgl.util.glu.GLU;
 
-import physics.Integration;
-import physics.model.*;
-
 import java.nio.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +23,8 @@ public class Main {
 
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 800;
-    private static final double KS = 5;
-    private static final double KD = 5;
     private static final double DELTA = 0.005;
-    private static final double EPSILON = 0.1;
-
-    private static final double AKS = 1;
-    private static final double AKD = 1;
+    private static final double EPSILON = 0.05;
     
     private long window;
     private int method;
@@ -99,12 +91,13 @@ public class Main {
             // Center the window
             glfwSetWindowPos(window,(vidmode.width() - pWidth.get(0)) / 2,(vidmode.height() - pHeight.get(0)) / 2);
         } // the stack frame is popped automatically
+
         glfwMakeContextCurrent(window); // Make the OpenGL context current
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible      
 
         reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
-        createHair2D(9, 3, 0.1, 0.01);
+        createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
     }
 
     private void loop() {
@@ -140,19 +133,7 @@ public class Main {
             // Mouse interaction.
             int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
             MouseSpring(state);
-            //keyboard swtich
-            int key1State = glfwGetKey(window, GLFW_KEY_1);
-            if (key1State == GLFW_PRESS) {
 
-                reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
-                createCloth2D(4, 4, 0.1, 0.01,false);
-            }
-            int key2State = glfwGetKey(window, GLFW_KEY_2);
-            if (key2State == GLFW_PRESS) {
-
-                reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
-                createHair2D(9, 3, 0.1, 0.01);
-            }
             glfwSwapBuffers(window); // Swap the color buffers.
             glfwPollEvents(); // Poll for window events. The key callback above will only be invoked during this call.
         }
@@ -173,7 +154,7 @@ public class Main {
             GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
             GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
 
-            float winZ = (float) 0;
+            float winZ = 0f;
             GLU.gluUnProject(winX, winY, winZ, modelview, projection, viewport, position);
             double[] pos = new double[]{position.get(0),position.get(1)};
             Particle2D mouse = new Particle2D(pos, 1);
@@ -187,7 +168,7 @@ public class Main {
             }
             if (mouseParticle != null) {
                 if (mouseSpring != null) forces.remove(mouseSpring);
-                mouseSpring = new SpringForce2D(mouseParticle, mouse, KS, KD, 0);
+                mouseSpring = new SpringForce2D(mouseParticle, mouse, 5, 5, 0);
                 forces.add(mouseSpring);
             }
         } else if (state == GLFW_RELEASE) {
@@ -209,12 +190,17 @@ public class Main {
         int key1State = glfwGetKey(window, GLFW_KEY_1);
         if (key1State == GLFW_PRESS) {
             reset(Integration.RUNGE_KUTA, ZOOM_0);
-            createCloth2D(4, 4, 0.1, 0.01, false);
+            createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
         }
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
             reset(Integration.RUNGE_KUTA, ZOOM_1);
-            createCloth2D(20, 10, 0.1, 0.01, true);
+            createCloth2D(20, 10, 0.1, 0.01, 5,5, true);
+        }
+        int key3State = glfwGetKey(window, GLFW_KEY_3);
+        if (key3State == GLFW_PRESS) {
+            reset(Integration.RUNGE_KUTA, ZOOM_0);
+            createHair2D(9, 3, 0.1, 0.01, 1, 1);
         }
     }
 
@@ -228,12 +214,14 @@ public class Main {
     }
 
     private void updateZoom() {
-        if (zoomLevel == ZOOM_1) glScaled(0.4,0.4,0);
+        if (zoomLevel == ZOOM_1) glScaled(1,1,1);
+        if (zoomLevel == ZOOM_1) glScaled(0.4,0.4,1);
     }
 
     private void updateParticles() {
         // Clear force accumulators
         for (Particle particle : particles) particle.clearForces();
+
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
 
@@ -241,7 +229,7 @@ public class Main {
         for (Solid solid : solids) solid.apply();
 
         // Compute and apply constraint forces
-        Constraint.apply(particles, constraints, KS, KD);
+        Constraint.apply(particles, constraints, 5, 5);
 
         // Update all the particles' state
         Integration.apply(particles, DELTA, method);
@@ -253,14 +241,14 @@ public class Main {
         for (Constraint constraint : constraints) constraint.draw();
         for (Solid solid : solids) solid.draw();
     }
+
     /**
-     *
      * @param width Number of particles across the cloth.
      * @param height Number of particles down the cloth.
      * @param distance Space between each particle and its neighbors.
      * @param mass Weight of all of the particles.
      */
-    private void createCloth2D(int width, int height, double distance, double mass, boolean floor) {
+    private void createCloth2D(int width, int height, double distance, double mass, double ks, double kd, boolean floor) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
@@ -269,27 +257,32 @@ public class Main {
             }
         }
         for (int i = 0; i < particles.size(); i++) {
-            if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), KS, KD, distance));
-            if ((i + height) < particles.size()) forces.add(new SpringForce2D(particles.get(i), particles.get(i+height), KS, KD, distance));
+            if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), ks, kd, distance));
+            if ((i + height) < particles.size()) forces.add(new SpringForce2D(particles.get(i), particles.get(i+height), ks, kd, distance));
+            if ((i + 1) % height > 0 && (i + height + 1) < particles.size())
+                forces.add(new SpringForce2D(particles.get(i), particles.get(i + height + 1), ks, kd, Math.sqrt(2) * distance));
+            if (i % height > 0 && (i + height - 1) < particles.size())
+                forces.add(new SpringForce2D(particles.get(i), particles.get(i + height - 1), ks, kd, Math.sqrt(2) * distance));
         } forces.add(new GravityForce2D(particles));
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
-        if (floor) solids.add(new Floor(particles, new double[]{0,-height*distance}, 1, 0.001));
+        if (floor) solids.add(new Floor(particles, new double[]{0,-height*distance}, 0.5, 0.001));
     }
-    private void createHair2D(int width, int height,double distance, double mass) {
+
+    private void createHair2D(int width, int height,double distance, double mass, double ks, double kd) {
         if (width <= 1) throw new IllegalArgumentException();
         double[] rightFix = new double[]{(width / 2) * distance,(height/2)*3*distance};
         for (int i = 0; i < width; i++) {
         	for(int j = 0; j< height;j++) {
-        		createSingleHair(new double[]{rightFix[0] - i * distance, rightFix[1] - j * 3*distance}, mass);
+        		createSingleHair(new double[]{rightFix[0] - i * distance, rightFix[1] - j * 3*distance}, mass, ks, kd);
         	}
             
         }
     }
-    private void createSingleHair(double[] pos,double mass) {
-    	
+
+    private void createSingleHair(double[] pos, double mass, double ks, double kd) {
     	Particle2D p1 = new Particle2D(pos, mass);
     	double[]pos2 = new double[] {pos[0]-0.05,pos[1]-0.3};
     	Particle2D p2 = new Particle2D(pos2, mass);
@@ -300,9 +293,9 @@ public class Main {
     	particles.add(p3);
     	forces.add(new AngularSpringForce2D(p2, p3, p1,0.0002,0.0002,60));
     	forces.add(new AngularSpringForce2D(p3, p1, p2,0.0002,0.0002,60));
-    	forces.add(new SpringForce2D(p1, p2, AKS, AKD, 0.1));
-    	forces.add(new SpringForce2D(p1, p3,AKS, AKD, 0.1));
-    	forces.add(new SpringForce2D(p2, p3, AKS, AKD, 0.05));
+    	forces.add(new SpringForce2D(p1, p2, ks, kd, 0.1));
+    	forces.add(new SpringForce2D(p1, p3, ks, kd, 0.1));
+    	forces.add(new SpringForce2D(p2, p3, ks, kd, 0.05));
     	constraints.add(new CircularConstraint2D(p2, new double[] {p2.getPosition()[0],p2.getPosition()[1]+0.01},0));
     	constraints.add(new CircularConstraint2D(p3, new double[] {p3.getPosition()[0],p3.getPosition()[1]+0.01},0));
     }

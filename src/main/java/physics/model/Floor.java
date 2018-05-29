@@ -4,6 +4,11 @@ import physics.LinearSolver;
 
 import java.util.Collection;
 
+/**
+ * This is a very dirty workaround for the issue of particles going through the Solid.
+ * It has several issues, like for example all vertical velocities being nullified once the particle is at rest on the Floor.
+ */
+
 public class Floor extends Wall {
 
     private static final double[] NORMAL = new double[]{0,1};
