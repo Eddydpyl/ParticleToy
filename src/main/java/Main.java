@@ -6,9 +6,6 @@ import physics.Integration;
 import physics.model.*;
 import org.lwjgl.util.glu.GLU;
 
-import physics.Integration;
-import physics.model.*;
-
 import java.nio.*;
 import java.util.ArrayList;
 import java.util.List;
