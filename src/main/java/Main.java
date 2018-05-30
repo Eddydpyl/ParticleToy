@@ -96,7 +96,7 @@ public class Main {
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible      
 
-        reset(Integration.RUNGE_KUTA, ZOOM_0); // Set default integration method & zoom level
+        reset(Integration.IMPLICIT_EURLER, ZOOM_0); // Set default integration method & zoom level
         createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
     }
 
@@ -189,18 +189,23 @@ public class Main {
 
         int key1State = glfwGetKey(window, GLFW_KEY_1);
         if (key1State == GLFW_PRESS) {
-            reset(Integration.RUNGE_KUTA, ZOOM_0);
+            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
             createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
         }
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
-            reset(Integration.RUNGE_KUTA, ZOOM_1);
-            createCloth2D(20, 10, 0.1, 0.01, 5,5, true);
+            reset(Integration.IMPLICIT_EURLER, ZOOM_1);
+            createCloth2D(20, 10, 0.1, 0.1, 5,5, true);
         }
         int key3State = glfwGetKey(window, GLFW_KEY_3);
         if (key3State == GLFW_PRESS) {
-            reset(Integration.RUNGE_KUTA, ZOOM_0);
+            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
             createHair2D(9, 3, 0.1, 0.01, 1, 1);
+        }
+        int key4State = glfwGetKey(window, GLFW_KEY_4);
+        if (key4State == GLFW_PRESS) {
+            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
+            createCrazy(9, 3, 0.1, 0.01, 1, 1);
         }
     }
 
@@ -278,7 +283,7 @@ public class Main {
         	for(int j = 0; j< height;j++) {
         		createSingleHair(new double[]{rightFix[0] - i * distance, rightFix[1] - j * 3*distance}, mass, ks, kd);
         	}
-            
+
         }
     }
 
@@ -298,6 +303,29 @@ public class Main {
     	forces.add(new SpringForce2D(p2, p3, ks, kd, 0.05));
     	constraints.add(new CircularConstraint2D(p2, new double[] {p2.getPosition()[0],p2.getPosition()[1]+0.01},0));
     	constraints.add(new CircularConstraint2D(p3, new double[] {p3.getPosition()[0],p3.getPosition()[1]+0.01},0));
+    }
+
+    /**
+     * @param width Number of particles across the cloth.
+     * @param height Number of particles down the cloth.
+     * @param distance Space between each particle and its neighbors.
+     * @param mass Weight of all of the particles.
+     */
+    private void createCrazy(int width, int height, double distance, double mass, double ks, double kd) {
+        if (width <= 1 || height <= 1) throw new IllegalArgumentException();
+        double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+            }
+        }
+        for (int i = 0; i < particles.size(); i++) {
+            if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), ks, kd, distance));
+        }
+        solids.add(new Wall(particles, new double[]{0,-height*distance}, new double[]{0,+1},1, 0.001));
+        solids.add(new Wall(particles, new double[]{0,+height*distance}, new double[]{0,-1},1, 0.001));
+        solids.add(new Wall(particles, new double[]{-width*distance,0}, new double[]{+1,0},1, 0.001));
+        solids.add(new Wall(particles, new double[]{+width*distance,0}, new double[]{-1,0},1, 0.001));
     }
 
 }
