@@ -1,5 +1,6 @@
 package physics;
 
+import org.ejml.simple.SimpleMatrix;
 import physics.model.Particle;
 
 import java.util.List;
@@ -9,6 +10,7 @@ public class Integration {
     public static final int EULER = 0;
     public static final int MID_POINT = 1;
     public static final int RUNGE_KUTA = 2;
+    public static final int IMPLICIT_EURLER = 3;
 
     public static void apply(List<? extends Particle> particles, double time, int mode) {
         switch (mode) {
@@ -73,7 +75,30 @@ public class Integration {
                         stateAdd(stateTimesScalar(k3, 1.0 / 3.0), stateTimesScalar(k4, 1.0 / 6.0)));
 
                 loadState(particles, stateAdd(o1, ks));
-            }break;
+            } break;
+            case IMPLICIT_EURLER: {
+                int dimensions = particles.get(0).getConstructPos().length;
+                SimpleMatrix TS = new SimpleMatrix(particles.size() * dimensions, particles.size() * dimensions);
+                SimpleMatrix F1 = new SimpleMatrix(1, particles.size() * dimensions);
+                SimpleMatrix F2 = new SimpleMatrix(particles.size() * dimensions, particles.size() * dimensions);
+                for (int i = 0; i < particles.size(); i++) {
+                    Particle particle = particles.get(i);
+                    Particle.updateVelocity(particle, time);
+                    for (int j = 0; j < dimensions; j++) {
+                        TS.set(dimensions * i + j, dimensions * i + j, 1 / time);
+                        F1.set(dimensions * i + j, particle.getVelocity()[j]);
+                        F2.set(dimensions * i + j, dimensions * i + j, particle.getForces()[j]);
+                    }
+                }
+                SimpleMatrix DX = TS.minus(F2).solve(F1.transpose());
+                for (int i = 0; i < particles.size(); i++) {
+                    Particle particle = particles.get(i);
+                    double[] position = particle.getPosition();
+                    for (int j = 0; j < dimensions; j++) {
+                        position[j] += DX.get(dimensions * i + j);
+                    }
+                }
+            } break;
             default: throw new IllegalArgumentException();
         }
     }

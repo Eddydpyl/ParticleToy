@@ -60,7 +60,7 @@ public interface Constraint {
             double[] forces = particle.getForces();
             for (int j = 0; j < dimensions; j++) {
                 forces[j] += QH.get(dimensions * i + j);
-            } particle.setForces(forces);
+            }
         }
     }
 
