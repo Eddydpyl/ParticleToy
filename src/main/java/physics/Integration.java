@@ -1,7 +1,7 @@
 package physics;
 
 import org.ejml.simple.SimpleMatrix;
-import physics.model.Particle;
+import physics.models.particles.Particle;
 
 import java.util.List;
 

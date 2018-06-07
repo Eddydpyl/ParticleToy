@@ -1,4 +1,7 @@
-package physics.model;
+package physics.models.constraints;
+
+import physics.models.particles.Particle;
+import physics.models.particles.Particle2D;
 
 import static org.lwjgl.opengl.GL11.*;
 import static physics.LinearSolver.*;

@@ -1,6 +1,7 @@
-package physics.model;
+package physics.models.constraints;
 
 import org.ejml.simple.SimpleMatrix;
+import physics.models.particles.Particle;
 
 import java.util.List;
 import java.util.Set;

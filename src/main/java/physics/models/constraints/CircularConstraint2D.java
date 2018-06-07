@@ -1,4 +1,7 @@
-package physics.model;
+package physics.models.constraints;
+
+import physics.models.particles.Particle;
+import physics.models.particles.Particle2D;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;

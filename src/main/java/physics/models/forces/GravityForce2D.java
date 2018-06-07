@@ -1,4 +1,6 @@
-package physics.model;
+package physics.models.forces;
+
+import physics.models.particles.Particle2D;
 
 import java.util.List;
 
