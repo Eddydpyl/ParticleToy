@@ -1,6 +1,8 @@
-package physics.model;
+package physics.models.solids;
 
 import physics.LinearSolver;
+import physics.models.particles.Particle;
+import physics.models.particles.Particle2D;
 
 import java.util.Collection;
 

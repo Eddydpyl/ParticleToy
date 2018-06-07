@@ -1,4 +1,4 @@
-package physics.model;
+package physics.models.particles;
 
 import static org.lwjgl.opengl.GL11.*;
 

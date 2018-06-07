@@ -1,4 +1,4 @@
-package physics.model;
+package physics.models.forces;
 
 public interface Force {
 

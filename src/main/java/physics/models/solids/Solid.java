@@ -1,4 +1,4 @@
-package physics.model;
+package physics.models.solids;
 
 public interface Solid {
 
