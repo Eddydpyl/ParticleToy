@@ -1,5 +1,6 @@
 package physics.models.forces;
 
+import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle2D;
 
 import java.util.List;
@@ -21,7 +22,10 @@ public class GravityForce2D implements Force {
         for (Particle2D particle : particles) {
             double[] current = particle.getForces();
             double[] gravity = new double[]{0, - particle.getMass() * G};
-            particle.setForces(vecAdd(current, gravity));
+            if (particle instanceof FluidParticle2D) {
+                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
+                fluidParticle.setForces(vecAdd(current, vecTimesScalar(gravity, fluidParticle.getDensity())));
+            } else particle.setForces(vecAdd(current, gravity));
         }
     }
 

@@ -19,16 +19,6 @@ public class Particle2D implements Particle {
         this.mass = mass;
     }
 
-    public Particle2D(double[] constructPos, double[] position, double[] velocity, double[] forces, double mass) {
-        checkPosition(constructPos);
-        checkPosition(position);
-        this.constructPos = constructPos;
-        this.position = position;
-        this.velocity = velocity;
-        this.forces = forces;
-        this.mass = mass;
-    }
-
     private void checkPosition(double[] position) {
         if (position.length != 2) throw new IllegalArgumentException();
     }
@@ -93,7 +83,5 @@ public class Particle2D implements Particle {
     public void setMass(double mass) {
         this.mass = mass;
     }
-
-
 
 }

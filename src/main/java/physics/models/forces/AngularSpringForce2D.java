@@ -1,5 +1,6 @@
 package physics.models.forces;
 
+import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle;
 import physics.models.particles.Particle2D;
 
@@ -36,9 +37,19 @@ public class AngularSpringForce2D implements Force {
         double[] vec1 = vecTimesScalar(dCdx1, scalar1);
         double[] vec2 = vecTimesScalar(dCdx2, scalar2);
         double[] vec0 = vecAdd(vec1, vec2);
-        p2.setForces(vecAdd(p2.getForces(), vec1));
-        p3.setForces(vecAdd(p3.getForces(), vec2));
-        p1.setForces(vecDiff(p1.getForces(), vec0));
+
+        if (p2 instanceof FluidParticle2D) {
+            FluidParticle2D fluidParticle = (FluidParticle2D) p2;
+            fluidParticle.setForces(vecAdd(p2.getForces(), vecTimesScalar(vec1, fluidParticle.getDensity())));
+        } else p2.setForces(vecAdd(p2.getForces(), vec1));
+        if (p3 instanceof FluidParticle2D) {
+            FluidParticle2D fluidParticle = (FluidParticle2D) p3;
+            fluidParticle.setForces(vecAdd(p3.getForces(), vecTimesScalar(vec2, fluidParticle.getDensity())));
+        } else p3.setForces(vecAdd(p3.getForces(), vec2));
+        if (p1 instanceof FluidParticle2D) {
+            FluidParticle2D fluidParticle = (FluidParticle2D) p1;
+            fluidParticle.setForces(vecDiff(p1.getForces(), vecTimesScalar(vec0, fluidParticle.getDensity())));
+        } else p1.setForces(vecDiff(p1.getForces(), vec0));
     }
 
 
