@@ -5,6 +5,7 @@ import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle2D;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static physics.LinearSolver.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -24,38 +25,43 @@ public class Grid2D {
     }
 
     public void update(List<Particle2D> particles) {
-        // Locate fluid particles inside the matrix
-        particles.stream().filter(particle -> particle instanceof FluidParticle2D)
+        // Reset all cells in the matrix
+        for (int i = 0; i < cells; i++) {
+            for (int j = 0; j < cells; j++) {
+                matrix[i][j] = new FluidParticle2D[0];
+            }
+        }
+        // Retrieve all fluid particles inside the grid
+        List<FluidParticle2D> fluidParticles= particles.stream().filter(particle -> particle instanceof FluidParticle2D)
                 .filter(particle -> particle.getPosition()[0] >= position[0]
                         && particle.getPosition()[0] <= position[0] + cells * h
                         && particle.getPosition()[1] <= position[1]
                         && particle.getPosition()[1] >= position[1] - cells * h)
-                .forEach(particle -> {
-                    FluidParticle2D fluidParticle = (FluidParticle2D) particle;
-                    int x = (int) (Math.abs(fluidParticle.getPosition()[0] - position[0]) / h);
-                    int y = (int) (Math.abs(fluidParticle.getPosition()[1] - position[1]) / h);
-                    FluidParticle2D[] oldCell = matrix[x][y];
-                    if (oldCell != null) {
-                        FluidParticle2D[] newCell = new FluidParticle2D[oldCell.length + 1];
-                        System.arraycopy(oldCell, 0, newCell, 0, oldCell.length);
-                        newCell[oldCell.length] = fluidParticle;
-                        matrix[x][y] = newCell;
-                    } else {
-                        FluidParticle2D[] newCell = new FluidParticle2D[]{fluidParticle};
-                        matrix[x][y] = newCell;
-                    } fluidParticle.setIndex(new int[]{x,y});
-                });
+                .map(x -> (FluidParticle2D) x).collect(Collectors.toList());
+        // Locate fluid particles inside the grid
+        for (FluidParticle2D fluidParticle : fluidParticles) {
+            int x = (int) (Math.abs(fluidParticle.getPosition()[0] - position[0]) / h);
+            int y = (int) (Math.abs(fluidParticle.getPosition()[1] - position[1]) / h);
+            FluidParticle2D[] oldCell = matrix[x][y];
+            if (oldCell.length > 0) {
+                FluidParticle2D[] newCell = new FluidParticle2D[oldCell.length + 1];
+                System.arraycopy(oldCell, 0, newCell, 0, oldCell.length);
+                newCell[oldCell.length] = fluidParticle;
+                matrix[x][y] = newCell;
+            } else {
+                FluidParticle2D[] newCell = new FluidParticle2D[]{fluidParticle};
+                matrix[x][y] = newCell;
+            } fluidParticle.setIndex(new int[]{x,y});
+        }
         //  Calculate the density of fluid particles inside the grid
-        particles.stream().filter(particle -> particle instanceof FluidParticle2D)
-                .forEach(x -> {
-                    double density = 0.0;
-                    FluidParticle2D particle = (FluidParticle2D) x;
-                    Poly6Kernel kernel = new Poly6Kernel(particle, h);
-                    for (FluidParticle2D fluidParticle : get(particle.getIndex())) {
-                        if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h)
-                            density += fluidParticle.getMass() * kernel.applyFunction(fluidParticle);
-                    } particle.setDensity(density);
-                });
+        for (FluidParticle2D fluidParticle : fluidParticles) {
+            double density = 0.0;
+            Poly6Kernel kernel = new Poly6Kernel(fluidParticle, h);
+            for (FluidParticle2D particle : get(fluidParticle.getIndex())) {
+                if (fluidParticle != particle && vecModule(vecDiff(fluidParticle.getPosition(), particle.getPosition())) <= h)
+                    density += particle.getMass() * kernel.applyFunction(particle);
+            } fluidParticle.setDensity(density);
+        }
     }
 
     public FluidParticle2D[] get(int[] index) {

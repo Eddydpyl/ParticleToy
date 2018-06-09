@@ -28,7 +28,7 @@ public class PressureForce2D implements Force {
         double[] forces = new double[]{0,0};
         SpikyKernel kernel = new SpikyKernel(particle, h);
         for (FluidParticle2D fluidParticle : grid2D.get(particle.getIndex())) {
-            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h) {
+            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h && fluidParticle.getDensity() > 0) {
                 forces = vecAdd(forces, vecTimesScalar(kernel.applyGradient(fluidParticle),
                         fluidParticle.getMass() * (pressure(particle) + pressure(fluidParticle)) / (2 * fluidParticle.getDensity())));
             }

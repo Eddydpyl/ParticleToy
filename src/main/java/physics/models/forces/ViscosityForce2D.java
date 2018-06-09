@@ -25,7 +25,7 @@ public class ViscosityForce2D implements Force{
         double[] forces = new double[]{0,0};
         ViscosityKernel kernel = new ViscosityKernel(particle, h);
         for (FluidParticle2D fluidParticle : grid2D.get(particle.getIndex())) {
-            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h) {
+            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h && fluidParticle.getDensity() > 0) {
                 forces = vecAdd(forces, vecTimesScalar(vecDiff(fluidParticle.getVelocity(), particle.getVelocity()),
                         fluidParticle.getMass() * kernel.applyLaplacian(fluidParticle) / fluidParticle.getDensity()));
             }

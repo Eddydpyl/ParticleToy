@@ -299,6 +299,7 @@ public class Main {
             if (particle instanceof FluidParticle2D) {
                 FluidParticle2D fluidParticle = (FluidParticle2D) particle;
                 forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
+                forces.add(new GravityForce2D(fluidParticle));
             }
         }
     }

@@ -26,7 +26,7 @@ public class SurfaceForce2D implements Force{
         double[] gradient = new double[]{0,0};
         double laplacian = 0.0;
         for (FluidParticle2D fluidParticle : grid2D.get(particle.getIndex())) {
-            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h) {
+            if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h && fluidParticle.getDensity() > 0) {
                 gradient = vecAdd(gradient, vecTimesScalar(kernel.applyGradient(fluidParticle), fluidParticle.getMass() / fluidParticle.getDensity()));
                 laplacian = laplacian + (fluidParticle.getMass() / fluidParticle.getDensity()) * kernel.applyLaplacian(fluidParticle);
             }
