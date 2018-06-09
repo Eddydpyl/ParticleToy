@@ -278,7 +278,8 @@ public class Main {
                 forces.add(new SpringForce2D(particles.get(i), particles.get(i + height + 1), ks, kd, Math.sqrt(2) * distance));
             if (i % height > 0 && (i + height - 1) < particles.size())
                 forces.add(new SpringForce2D(particles.get(i), particles.get(i + height - 1), ks, kd, Math.sqrt(2) * distance));
-        } forces.add(new GravityForce2D(particles));
+            forces.add(new GravityForce2D(particles.get(i)));
+        }
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
@@ -294,11 +295,11 @@ public class Main {
                 particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
             }
         }
-        for (int i = 0; i < particles.size(); i++) {
-            forces.add(new PressureForce2D(particles, grid, 100, H));
-            forces.add(new ViscosityForce2D(particles, grid, 1, H));
-            forces.add(new SurfaceForce2D(particles, grid, 12.75, H));
-            forces.add(new GravityForce2D(particles));
+        for (Particle particle : particles) {
+            if (particle instanceof FluidParticle2D) {
+                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
+                forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
+            }
         }
     }
 
