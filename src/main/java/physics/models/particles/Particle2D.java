@@ -1,5 +1,7 @@
 package physics.models.particles;
 
+import java.util.Arrays;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public class Particle2D implements Particle {
@@ -84,4 +86,14 @@ public class Particle2D implements Particle {
         this.mass = mass;
     }
 
+    @Override
+    public String toString() {
+        return "Particle2D{" +
+                "constructPos=" + Arrays.toString(constructPos) +
+                ", position=" + Arrays.toString(position) +
+                ", velocity=" + Arrays.toString(velocity) +
+                ", forces=" + Arrays.toString(forces) +
+                ", mass=" + mass +
+                '}';
+    }
 }

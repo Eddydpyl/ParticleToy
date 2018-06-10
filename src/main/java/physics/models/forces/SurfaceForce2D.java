@@ -8,6 +8,8 @@ import static physics.LinearSolver.*;
 
 public class SurfaceForce2D implements Force{
 
+    private static final double T = 0.001;
+
     private FluidParticle2D particle;
     private Grid2D grid2D;
     private double sigma;
@@ -22,15 +24,17 @@ public class SurfaceForce2D implements Force{
 
     @Override
     public void apply() {
+        double[] forces = new double[]{0,0};
         Poly6Kernel kernel = new Poly6Kernel(particle, h);
-        double[] gradient = new double[]{0,0};
-        double laplacian = 0.0;
         for (FluidParticle2D fluidParticle : grid2D.get(particle.getIndex())) {
             if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h && fluidParticle.getDensity() > 0) {
-                gradient = vecAdd(gradient, vecTimesScalar(kernel.applyGradient(fluidParticle), fluidParticle.getMass() / fluidParticle.getDensity()));
-                laplacian = laplacian + (fluidParticle.getMass() / fluidParticle.getDensity()) * kernel.applyLaplacian(fluidParticle);
+                double[] gradient = vecTimesScalar(kernel.applyGradient(fluidParticle), fluidParticle.getMass() / fluidParticle.getDensity());
+                if (vecModule(gradient) > T) {
+                    double laplacian = (fluidParticle.getMass() / fluidParticle.getDensity()) * kernel.applyLaplacian(fluidParticle);
+                    forces = vecAdd(forces, vecTimesScalar(gradient, sigma * laplacian * vecModule(gradient)));
+                }
             }
-        } particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(gradient, sigma * laplacian * vecModule(gradient))));
+        } particle.setForces(vecDiff(particle.getForces(), forces));
     }
 
     @Override

@@ -38,6 +38,7 @@ public class Main {
     private long window;
     private int method;
     private int zoomLevel;
+    private boolean showGrid;
 
     private List<Particle2D> particles;
     private List<Force> forces;
@@ -106,8 +107,7 @@ public class Main {
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible      
 
-        reset(Integration.IMPLICIT_EURLER, ZOOM_0); // Set default integration method & zoom level
-        createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
+        defaultState(); // Load the default simulation
     }
 
     private void loop() {
@@ -195,23 +195,23 @@ public class Main {
     private void simulate(double time) {
         updateZoom();
         updateParticles();
-        draw(true); // Draw all particles, forces and constraints.
+        draw(showGrid); // Draw all particles, forces and constraints.
 
         int key1State = glfwGetKey(window, GLFW_KEY_1);
-        if (key1State == GLFW_PRESS) {
-            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-            createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
-        }
+        if (key1State == GLFW_PRESS) defaultState();
+
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
+            showGrid = false;
             reset(Integration.IMPLICIT_EURLER, ZOOM_1);
             createCloth2D(20, 10, 0.1, 0.1, 5,5, true);
         }
-        int key3State = glfwGetKey(window, GLFW_KEY_3);
-        if (key3State == GLFW_PRESS) {
-            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-            createLiquid(10, 10, 0.001, 0.1);
-        }
+    }
+
+    private void defaultState() {
+        showGrid = true;
+        reset(Integration.IMPLICIT_EURLER, ZOOM_0);
+        createLiquid(10, 10, 0.01, 0.1);
     }
 
     private void reset(int method, int zoomLevel) {
@@ -299,7 +299,6 @@ public class Main {
             if (particle instanceof FluidParticle2D) {
                 FluidParticle2D fluidParticle = (FluidParticle2D) particle;
                 forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
-                forces.add(new GravityForce2D(fluidParticle));
             }
         }
     }

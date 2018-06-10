@@ -12,7 +12,6 @@ public class PressureForce2D implements Force {
 
     private FluidParticle2D particle;
     private Grid2D grid2D;
-    private double sigma;
     private double p0;
     private double h;
 

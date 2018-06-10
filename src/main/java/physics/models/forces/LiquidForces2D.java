@@ -15,7 +15,9 @@ import static physics.LinearSolver.*;
 
 public class LiquidForces2D implements Force {
 
+    private static final double W = 0.000000000001;
     private static final double K = 8.3145;
+    private static final double T = 0.001;
 
     private FluidParticle2D particle;
     private Grid2D grid2D;
@@ -37,8 +39,7 @@ public class LiquidForces2D implements Force {
     public void apply() {
         double[] pressureForces = new double[]{0,0};
         double[] viscousForces = new double[]{0,0};
-        double[] surfaceGradient = new double[]{0,0};
-        double surfaceLaplacian = 0.0;
+        double[] surfaceForces = new double[]{0,0};
         SpikyKernel spikyKernel = new SpikyKernel(particle, h);
         Poly6Kernel poly6Kernel = new Poly6Kernel(particle, h);
         ViscosityKernel viscosityKernel = new ViscosityKernel(particle, h);
@@ -46,15 +47,18 @@ public class LiquidForces2D implements Force {
             if (particle != fluidParticle && vecModule(vecDiff(particle.getPosition(), fluidParticle.getPosition())) <= h && fluidParticle.getDensity() > 0) {
                 pressureForces = vecAdd(pressureForces, vecTimesScalar(spikyKernel.applyGradient(fluidParticle),
                         fluidParticle.getMass() * (pressure(particle) + pressure(fluidParticle)) / (2 * fluidParticle.getDensity())));
-                viscousForces = vecAdd(viscousForces, vecTimesScalar(vecDiff(fluidParticle.getVelocity(), particle.getVelocity()),
-                        fluidParticle.getMass() * viscosityKernel.applyLaplacian(fluidParticle) / fluidParticle.getDensity()));
-                surfaceGradient = vecAdd(surfaceGradient, vecTimesScalar(poly6Kernel.applyGradient(fluidParticle), fluidParticle.getMass() / fluidParticle.getDensity()));
-                surfaceLaplacian = surfaceLaplacian + (fluidParticle.getMass() / fluidParticle.getDensity()) * poly6Kernel.applyLaplacian(fluidParticle);
+                viscousForces = vecTimesScalar(vecAdd(viscousForces, vecTimesScalar(vecDiff(fluidParticle.getVelocity(), particle.getVelocity()),
+                        fluidParticle.getMass() * viscosityKernel.applyLaplacian(fluidParticle) / fluidParticle.getDensity())), mu);
+                double[] gradient = vecTimesScalar(poly6Kernel.applyGradient(fluidParticle), fluidParticle.getMass() / fluidParticle.getDensity());
+                if (vecModule(gradient) > T) {
+                    double laplacian = (fluidParticle.getMass() / fluidParticle.getDensity()) * poly6Kernel.applyLaplacian(fluidParticle);
+                    surfaceForces = vecAdd(surfaceForces, vecTimesScalar(gradient, sigma * laplacian * vecModule(gradient)));
+                }
             }
         }
-        particle.setForces(vecDiff(particle.getForces(), pressureForces));
-        particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(surfaceGradient, sigma * surfaceLaplacian * vecModule(surfaceGradient))));
-        particle.setForces(vecAdd(particle.getForces(), vecTimesScalar(viscousForces, mu)));
+        particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(pressureForces, W)));
+        particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(surfaceForces, W)));
+        particle.setForces(vecAdd(particle.getForces(), vecTimesScalar(viscousForces, W)));
     }
 
     @Override
