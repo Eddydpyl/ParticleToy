@@ -4,17 +4,15 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
 import org.lwjgl.util.glu.GLU;
+import physics.models.Grid2D;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
-import physics.models.forces.AngularSpringForce2D;
-import physics.models.forces.Force;
-import physics.models.forces.GravityForce2D;
-import physics.models.forces.SpringForce2D;
+import physics.models.forces.*;
+import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle;
 import physics.models.particles.Particle2D;
 import physics.models.solids.Floor;
 import physics.models.solids.Solid;
-import physics.models.solids.Wall;
 
 import java.nio.*;
 import java.util.ArrayList;
@@ -35,20 +33,22 @@ public class Main {
     private static final int HEIGHT = 800;
     private static final double DELTA = 0.005;
     private static final double EPSILON = 0.05;
+    private static final double H = 0.05;
     
     private long window;
     private int method;
     private int zoomLevel;
+    private boolean showGrid;
 
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
     private List<Solid> solids;
+    private Grid2D grid;
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
-    
-    
+
     public static void main(String[] args) {
         new Main().run();
     }
@@ -80,7 +80,8 @@ public class Main {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
         // Create the window
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
+        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        window = glfwCreateWindow(WIDTH, HEIGHT, "Particle Toy", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -106,8 +107,7 @@ public class Main {
         glfwSwapInterval(1); // Enable v-sync
         glfwShowWindow(window); // Make the window visible      
 
-        reset(Integration.IMPLICIT_EURLER, ZOOM_0); // Set default integration method & zoom level
-        createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
+        defaultState(); // Load the default simulation
     }
 
     private void loop() {
@@ -195,28 +195,23 @@ public class Main {
     private void simulate(double time) {
         updateZoom();
         updateParticles();
-        draw(); // Draw all particles, forces and constraints.
+        draw(showGrid); // Draw all particles, forces and constraints.
 
         int key1State = glfwGetKey(window, GLFW_KEY_1);
-        if (key1State == GLFW_PRESS) {
-            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-            createCloth2D(4, 4, 0.1, 0.01, 5, 5, false);
-        }
+        if (key1State == GLFW_PRESS) defaultState();
+
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
+            showGrid = false;
             reset(Integration.IMPLICIT_EURLER, ZOOM_1);
             createCloth2D(20, 10, 0.1, 0.1, 5,5, true);
         }
-        int key3State = glfwGetKey(window, GLFW_KEY_3);
-        if (key3State == GLFW_PRESS) {
-            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-            createHair2D(9, 3, 0.1, 0.01, 1, 1);
-        }
-        int key4State = glfwGetKey(window, GLFW_KEY_4);
-        if (key4State == GLFW_PRESS) {
-            reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-            createCrazy(9, 3, 0.1, 0.01, 1, 1);
-        }
+    }
+
+    private void defaultState() {
+        showGrid = true;
+        reset(Integration.IMPLICIT_EURLER, ZOOM_0);
+        createLiquid(10, 10, 0.01, 0.1);
     }
 
     private void reset(int method, int zoomLevel) {
@@ -226,16 +221,20 @@ public class Main {
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         solids = new ArrayList<>();
+        grid = new Grid2D(new double[]{-1,1}, 40, H);
     }
 
     private void updateZoom() {
-        if (zoomLevel == ZOOM_1) glScaled(1,1,1);
+        if (zoomLevel == ZOOM_0) glScaled(1,1,1);
         if (zoomLevel == ZOOM_1) glScaled(0.4,0.4,1);
     }
 
     private void updateParticles() {
         // Clear force accumulators
         for (Particle particle : particles) particle.clearForces();
+
+        // Calculate density for liquids
+        grid.update(particles);
 
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
@@ -250,11 +249,12 @@ public class Main {
         Integration.apply(particles, DELTA, method);
     }
 
-    private void draw() {
+    private void draw(boolean drawGrid) {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
         for (Solid solid : solids) solid.draw();
+        if (drawGrid) grid.draw();
     }
 
     /**
@@ -278,7 +278,8 @@ public class Main {
                 forces.add(new SpringForce2D(particles.get(i), particles.get(i + height + 1), ks, kd, Math.sqrt(2) * distance));
             if (i % height > 0 && (i + height - 1) < particles.size())
                 forces.add(new SpringForce2D(particles.get(i), particles.get(i + height - 1), ks, kd, Math.sqrt(2) * distance));
-        } forces.add(new GravityForce2D(particles));
+            forces.add(new GravityForce2D(particles.get(i)));
+        }
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
@@ -286,56 +287,20 @@ public class Main {
         if (floor) solids.add(new Floor(particles, new double[]{0,-height*distance}, 0.5, 0.001));
     }
 
-    private void createHair2D(int width, int height,double distance, double mass, double ks, double kd) {
-        if (width <= 1) throw new IllegalArgumentException();
-        double[] rightFix = new double[]{(width / 2) * distance,(height/2)*3*distance};
-        for (int i = 0; i < width; i++) {
-        	for(int j = 0; j< height;j++) {
-        		createSingleHair(new double[]{rightFix[0] - i * distance, rightFix[1] - j * 3*distance}, mass, ks, kd);
-        	}
-
-        }
-    }
-
-    private void createSingleHair(double[] pos, double mass, double ks, double kd) {
-    	Particle2D p1 = new Particle2D(pos, mass);
-    	double[]pos2 = new double[] {pos[0]-0.05,pos[1]-0.3};
-    	Particle2D p2 = new Particle2D(pos2, mass);
-    	double[]pos3 = new double[] {pos[0]+0.05,pos[1]-0.3};
-    	Particle2D p3 = new Particle2D(pos3, mass);
-    	particles.add(p1);
-    	particles.add(p2);
-    	particles.add(p3);
-    	forces.add(new AngularSpringForce2D(p2, p3, p1,0.0002,0.0002,60));
-    	forces.add(new AngularSpringForce2D(p3, p1, p2,0.0002,0.0002,60));
-    	forces.add(new SpringForce2D(p1, p2, ks, kd, 0.1));
-    	forces.add(new SpringForce2D(p1, p3, ks, kd, 0.1));
-    	forces.add(new SpringForce2D(p2, p3, ks, kd, 0.05));
-    	constraints.add(new CircularConstraint2D(p2, new double[] {p2.getPosition()[0],p2.getPosition()[1]+0.01},0));
-    	constraints.add(new CircularConstraint2D(p3, new double[] {p3.getPosition()[0],p3.getPosition()[1]+0.01},0));
-    }
-
-    /**
-     * @param width Number of particles across the cloth.
-     * @param height Number of particles down the cloth.
-     * @param distance Space between each particle and its neighbors.
-     * @param mass Weight of all of the particles.
-     */
-    private void createCrazy(int width, int height, double distance, double mass, double ks, double kd) {
+    private void createLiquid(int width, int height, double distance, double mass) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
-        for (int i = 0; i < width; i++) {
+        for(int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+                particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
             }
         }
-        for (int i = 0; i < particles.size(); i++) {
-            if ((i + 1) % height > 0) forces.add(new SpringForce2D(particles.get(i), particles.get(i+1), ks, kd, distance));
+        for (Particle particle : particles) {
+            if (particle instanceof FluidParticle2D) {
+                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
+                forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
+            }
         }
-        solids.add(new Wall(particles, new double[]{0,-height*distance}, new double[]{0,+1},1, 0.001));
-        solids.add(new Wall(particles, new double[]{0,+height*distance}, new double[]{0,-1},1, 0.001));
-        solids.add(new Wall(particles, new double[]{-width*distance,0}, new double[]{+1,0},1, 0.001));
-        solids.add(new Wall(particles, new double[]{+width*distance,0}, new double[]{-1,0},1, 0.001));
     }
 
 }

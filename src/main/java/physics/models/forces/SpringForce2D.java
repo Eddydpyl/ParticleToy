@@ -1,5 +1,6 @@
 package physics.models.forces;
 
+import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle2D;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -27,8 +28,14 @@ public class SpringForce2D implements Force {
         double module = vecModule(posDiff);
         double magnitude = ks * (module - distance) + kd * vecDot(posDiff, velDiff);
         double[] spring = vecTimesScalar(posDiff, magnitude);
-        p1.setForces(vecDiff(p1.getForces(), spring));
-        p2.setForces(vecAdd(p2.getForces(), spring));
+        if (p1 instanceof FluidParticle2D) {
+            FluidParticle2D fluidParticle = (FluidParticle2D) p1;
+            fluidParticle.setForces(vecDiff(p1.getForces(), vecTimesScalar(spring, fluidParticle.getDensity())));
+        } else p1.setForces(vecDiff(p1.getForces(), spring));
+        if (p2 instanceof FluidParticle2D) {
+            FluidParticle2D fluidParticle = (FluidParticle2D) p2;
+            fluidParticle.setForces(vecAdd(p2.getForces(), vecTimesScalar(spring, fluidParticle.getDensity())));
+        } else p2.setForces(vecAdd(p2.getForces(), spring));
     }
 
     @Override

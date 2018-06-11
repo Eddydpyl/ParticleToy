@@ -15,8 +15,9 @@ public class ViscosityKernel extends Kernel {
     public double applyFunction(Particle pj) {
         double[] r = vecDiff(pi.getPosition(), pj.getPosition());
         double rm = vecModule(r);
-        double aux = 0 <= rm && rm <= h ? - Math.pow(rm, 3) / (2 * Math.pow(h, 3)) + Math.pow(rm, 2) / Math.pow(h, 2) + h / (2 * rm) - 1 : 0;
-        return (15 / (2 * Math.PI * Math.pow(h, 3))) * aux;
+        if (0 <= rm && rm <= h)
+            return (15 / (2 * Math.PI * Math.pow(h, 3))) * (- Math.pow(rm, 3) / (2 * Math.pow(h, 3)) + Math.pow(rm, 2) / Math.pow(h, 2) + h / (2 * rm) - 1);
+        else return 0;
     }
 
     @Override
@@ -28,8 +29,9 @@ public class ViscosityKernel extends Kernel {
     public double applyLaplacian(Particle pj) {
         double[] r = vecDiff(pi.getPosition(), pj.getPosition());
         double rm = vecModule(r);
-        double aux = 0 <= rm && rm <= h ? h - rm : 0;
-        return (45 / (Math.PI * Math.pow(h, 6))) * aux;
+        if (0 <= rm && rm <= h)
+            return (45 / (Math.PI * Math.pow(h, 5))) * (1 - rm / h);
+        else return 0;
     }
 
 }

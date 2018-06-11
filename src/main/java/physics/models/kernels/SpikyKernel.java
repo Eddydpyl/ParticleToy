@@ -15,16 +15,18 @@ public class SpikyKernel extends Kernel {
     public double applyFunction(Particle pj) {
         double[] r = vecDiff(pi.getPosition(), pj.getPosition());
         double rm = vecModule(r);
-        double aux = 0 <= rm && rm <= h ? Math.pow(h - rm, 3) : 0;
-        return (15 / (Math.PI * Math.pow(h, 6))) * aux;
+        if (0 <= rm && rm <= h)
+            return (15 / (Math.PI * Math.pow(h, 6))) * Math.pow(h - rm, 3);
+        else return 0;
     }
 
     @Override
     public double[] applyGradient(Particle pj) {
         double[] r = vecDiff(pi.getPosition(), pj.getPosition());
         double rm = vecModule(r);
-        double[] aux = 0 <= rm && rm <= h ? vecTimesScalar(r, rm * Math.pow(h - rm, 2)) : new double[]{0,0};
-        return vecTimesScalar(aux, (- 45 / (Math.PI * Math.pow(h, 6))));
+        if (0 <= rm && rm <= h)
+            return vecTimesScalar(r, (- 45 / (Math.PI * Math.pow(h, 6) * rm)) * Math.pow(h - rm, 2));
+        else return new double[pi.getPosition().length];
     }
 
     @Override

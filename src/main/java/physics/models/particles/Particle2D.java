@@ -1,5 +1,7 @@
 package physics.models.particles;
 
+import java.util.Arrays;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public class Particle2D implements Particle {
@@ -16,16 +18,6 @@ public class Particle2D implements Particle {
         this.position = constructPos;
         this.velocity = new double[]{0,0};
         this.forces = new double[]{0,0};
-        this.mass = mass;
-    }
-
-    public Particle2D(double[] constructPos, double[] position, double[] velocity, double[] forces, double mass) {
-        checkPosition(constructPos);
-        checkPosition(position);
-        this.constructPos = constructPos;
-        this.position = position;
-        this.velocity = velocity;
-        this.forces = forces;
         this.mass = mass;
     }
 
@@ -94,6 +86,14 @@ public class Particle2D implements Particle {
         this.mass = mass;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "Particle2D{" +
+                "constructPos=" + Arrays.toString(constructPos) +
+                ", position=" + Arrays.toString(position) +
+                ", velocity=" + Arrays.toString(velocity) +
+                ", forces=" + Arrays.toString(forces) +
+                ", mass=" + mass +
+                '}';
+    }
 }
