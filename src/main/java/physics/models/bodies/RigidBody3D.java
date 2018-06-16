@@ -13,10 +13,10 @@ import org.lwjgl.util.vector.Vector3f;
 
 import physics.Quaternion;
 import physics.models.particles.Particle;
-import physics.models.particles.Particle2D;
+import physics.models.particles.Particle3D;
 
 public class RigidBody3D implements RigidBody {
-	private List<Particle2D> particles;
+	private List<Particle3D> particles;
 	private Vector3f constructPos;
 	private double mass;
 	private Matrix3f iBody,iBodyInv;
@@ -38,7 +38,6 @@ public class RigidBody3D implements RigidBody {
 	public RigidBody3D(Vector3f startPos, Vector3f s, Vector3f numParticles, double particleMass) {
 		initializeVariables();
 		size = s;
-		Double density = particleMass / size.x + 1500;
 	    //generate particles with body coordinates
 	    for (int x = 0; x < numParticles.x; x++) {
 	        for (int y = 0; y < numParticles.y; y++) {
@@ -46,8 +45,7 @@ public class RigidBody3D implements RigidBody {
 	                double xStart = -size.x / 2 + size.x * (float) x / (numParticles.x - 1);
 	                double yStart = -size.y / 2 + size.y * (float) y / (numParticles.y - 1);
 	                double zStart = -size.z / 2 + size.z * (float) z / (numParticles.z - 1);
-	                //TODO create particle 3d
-	                Particle2D p = new Particle2D(new double[] {xStart, yStart}, particleMass);
+	                Particle3D p = new Particle3D(new double[] {xStart, yStart,zStart}, particleMass);
 	                //A rigid body has constant density
 	                particles.add(p);
 	        	}
@@ -61,10 +59,9 @@ public class RigidBody3D implements RigidBody {
 
 	    //Calculate Ibody
 	    Matrix3f IbodyMatrix = Matrix3f.setIdentity(iBodyInv);
-	    IbodyMatrix.m00 = (float) (Math.pow(size.y,2)+ Math.pow(size.z,2));
-	    IbodyMatrix.m11 = (float) (Math.pow(size.x,2)+ Math.pow(size.z,2));
-	    IbodyMatrix.m22 = (float) (Math.pow(size.x,2)+ Math.pow(size.y,2));
-	    //TODO scale mass
+	    IbodyMatrix.m00 = (float) ((float) (Math.pow(size.y,2)+ Math.pow(size.z,2)) * mass/12);
+	    IbodyMatrix.m11 = (float) ((float) (Math.pow(size.x,2)+ Math.pow(size.z,2)) * mass/12);
+	    IbodyMatrix.m22 = (float) ((float) (Math.pow(size.x,2)+ Math.pow(size.y,2)) * mass/12);
 	    iBody = IbodyMatrix;
 	    Matrix3f.invert(iBody, iBodyInv);
 	}
@@ -100,6 +97,24 @@ public class RigidBody3D implements RigidBody {
 	    glVertex3d(v4.x, v4.y, v4.z);
 	    glVertex3d(v3.x, v3.y, v3.z);
 	    glVertex3d(v4.x, v4.y, v4.z);	
+	    
+	    glVertex3d(v5.x, v5.y, v5.z);
+	    glVertex3d(v6.x, v6.y, v6.z);
+	    glVertex3d(v5.x, v5.y, v5.z);
+	    glVertex3d(v7.x, v7.y, v7.z);
+	    glVertex3d(v6.x, v6.y, v6.z);
+	    glVertex3d(v8.x, v8.y, v8.z);
+	    glVertex3d(v7.x, v7.y, v7.z);
+	    glVertex3d(v8.x, v8.y, v8.z);
+
+	    glVertex3d(v1.x, v1.y, v1.z);
+	    glVertex3d(v5.x, v5.y, v5.z);
+	    glVertex3d(v2.x, v2.y, v2.z);
+	    glVertex3d(v6.x, v6.y, v6.z);
+	    glVertex3d(v3.x, v3.y, v3.z);
+	    glVertex3d(v7.x, v7.y, v7.z);
+	    glVertex3d(v4.x, v4.y, v4.z);
+	    glVertex3d(v8.x, v8.y, v8.z);
 	    glEnd();		
 	}
 	
@@ -147,8 +162,7 @@ public class RigidBody3D implements RigidBody {
 	    	Vector3f conPos = new Vector3f((float)p.getConstructPos()[0],(float)p.getConstructPos()[1],0);
 	    	Vector3f curPos = new Vector3f((float)p.getPosition()[0],(float)p.getPosition()[1],0);
 	    	Vector3f pos =new Vector3f(Vector3f.add(Matrix3f.transform(R, conPos, null),curPos,null));
-	    	//TODO 3d particle
-	        p.setPosition(new double[]{pos.x,pos.y});
+	        p.setPosition(new double[]{pos.x,pos.y,pos.z});
 	    }
 
 	    //Compute auxiliary variables
