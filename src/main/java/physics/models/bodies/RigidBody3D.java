@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL11.glColor3d;
 import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glVertex3d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.util.vector.Matrix3f;
@@ -36,8 +37,10 @@ public class RigidBody3D implements RigidBody {
 	private Vector3f torque;
 	
 	public RigidBody3D(Vector3f startPos, Vector3f s, Vector3f numParticles, double particleMass) {
-		initializeVariables();
+		constructPos = startPos;
 		size = s;
+		initializeVariables();
+		
 	    //generate particles with body coordinates
 	    for (int x = 0; x < numParticles.x; x++) {
 	        for (int y = 0; y < numParticles.y; y++) {
@@ -66,16 +69,21 @@ public class RigidBody3D implements RigidBody {
 	    Matrix3f.invert(iBody, iBodyInv);
 	}
 	public void initializeVariables() {
+		position = new Vector3f();
 		position = constructPos;
+		R = new Matrix3f();
+		iBodyInv = new Matrix3f();
 	    Matrix3f.setIdentity(R);
 	    q = new Quaternion(1f,0f,0f,0f);
 	    P = new Vector3f(0, 0, 0);
 	    L = new Vector3f(0, 0, 0);
 	    Iinv = iBodyInv;
 	    v = new Vector3f(0, 0, 0);
+	    omega = new Vector3f(0,0,0);
 	    Matrix3f.transform(Iinv, L, omega);
 	    force = new Vector3f(0, 0, 0);
 	    torque = new Vector3f(0, 0, 0);
+	    particles = new ArrayList<Particle3D>();
 	}
 	@Override
 	public void draw() {
@@ -88,7 +96,7 @@ public class RigidBody3D implements RigidBody {
 	    Vector3f v7 = Vector3f.add(Matrix3f.transform(R, new Vector3f(-size.x / 2, size.y / 2, size.z / 2), null),position,null);
 	    Vector3f v8 = Vector3f.add(Matrix3f.transform(R, new Vector3f(size.x / 2, size.y / 2, size.z / 2), null),position,null);
 	    glBegin(GL_LINES);
-	    glColor3d(0.6, 0.3, 0.9);
+	    glColor3d(1, 1, 1);
 	    glVertex3d(v1.x, v1.y, v1.z);
 	    glVertex3d(v2.x, v2.y, v2.z);
 	    glVertex3d(v1.x, v1.y, v1.z);
@@ -140,23 +148,24 @@ public class RigidBody3D implements RigidBody {
 	        Vector3f.add(torque, Vector3f.cross(po, f, null), torque);
 	    }
 	}
-	public void setState(float[] newState) {
-	    position.x = newState[0];
-	    position.y = newState[1];
-	    position.z = newState[2];
+	@Override
+	public void setState(double[] newState) {
+	    position.x = (float) newState[0];
+	    position.y = (float) newState[1];
+	    position.z = (float) newState[2];
 
-	    q.w = newState[3];
-	    q.x = newState[4];
-	    q.y = newState[5];
-	    q.z = newState[6];
+	    q.w = (float) newState[3];
+	    q.x = (float) newState[4];
+	    q.y = (float) newState[5];
+	    q.z = (float) newState[6];
 
-	    P.x = newState[7];
-	    P.y = newState[8];
-	    P.z = newState[9];
+	    P.x = (float) newState[7];
+	    P.y = (float) newState[8];
+	    P.z = (float) newState[9];
 
-	    L.x = newState[10];
-	    L.y = newState[11];
-	    L.z = newState[12];
+	    L.x = (float) newState[10];
+	    L.y = (float) newState[11];
+	    L.z = (float) newState[12];
 
 	    for (Particle p : particles) {
 	    	Vector3f conPos = new Vector3f((float)p.getConstructPos()[0],(float)p.getConstructPos()[1],0);
@@ -175,7 +184,7 @@ public class RigidBody3D implements RigidBody {
 	    Matrix3f.mul(Matrix3f.mul(R, iBodyInv, null), (Matrix3f) R.transpose(), Iinv);
 	    Matrix3f.transform(Iinv, L, omega);
 	}
-	
+	@Override
 	public double[] getState() {
 	    double[] y = new double[] {};
 	    y[0] = position.x;
@@ -196,7 +205,7 @@ public class RigidBody3D implements RigidBody {
 	    y[12] = L.z;
 	    return y;
 	}
-	
+	@Override
 	public double[] getDerivativeState() {
 	    updateForce();
 	    updateTorque();

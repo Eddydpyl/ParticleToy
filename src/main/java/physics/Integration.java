@@ -1,6 +1,8 @@
 package physics;
 
 import org.ejml.simple.SimpleMatrix;
+
+import physics.models.bodies.RigidBody;
 import physics.models.particles.Particle;
 
 import java.util.List;
@@ -12,12 +14,15 @@ public class Integration {
     public static final int RUNGE_KUTA = 2;
     public static final int IMPLICIT_EURLER = 3;
 
-    public static void apply(List<? extends Particle> particles, double time, int mode) {
+    public static void apply(List<? extends Particle> particles,List<? extends RigidBody> RigidBodies, double time, int mode) {
         switch (mode) {
             case EULER: {
                 for (Particle particle : particles) {
                     Particle.updateVelocity(particle, time);
                     Particle.updatePosition(particle, time);
+                }
+                for (RigidBody rigidBody : RigidBodies) {
+                	RigidBody.updateState(rigidBody, time);
                 }
             } break;
             case MID_POINT: {

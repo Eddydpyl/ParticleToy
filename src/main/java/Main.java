@@ -4,7 +4,11 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Vector3f;
+
 import physics.models.Grid2D;
+import physics.models.bodies.RigidBody;
+import physics.models.bodies.RigidBody3D;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
 import physics.models.forces.*;
@@ -44,6 +48,7 @@ public class Main {
     private List<Force> forces;
     private List<Constraint> constraints;
     private List<Solid> solids;
+    private List<RigidBody3D> rigidBodies;
     private Grid2D grid;
 
     private Particle2D mouseParticle;
@@ -218,6 +223,7 @@ public class Main {
         this.method = method;
         this.zoomLevel = zoomLevel;
         particles = new ArrayList<>();
+        rigidBodies = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         solids = new ArrayList<>();
@@ -246,7 +252,7 @@ public class Main {
         Constraint.apply(particles, constraints, 5, 5);
 
         // Update all the particles' state
-        Integration.apply(particles, DELTA, method);
+        Integration.apply(particles,rigidBodies, DELTA, method);
     }
 
     private void draw(boolean drawGrid) {
@@ -254,6 +260,7 @@ public class Main {
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
         for (Solid solid : solids) solid.draw();
+        for (RigidBody rigidBody : rigidBodies) rigidBody.draw();
         if (drawGrid) grid.draw();
     }
 
@@ -301,6 +308,12 @@ public class Main {
                 forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
             }
         }
+        Vector3f pos = new Vector3f(2,3,-1);
+        Vector3f size = new Vector3f(30,30,30);
+        Vector3f noParticles = new Vector3f(30,30,30);
+        
+        RigidBody3D body = new RigidBody3D(pos, size, noParticles, 3.0f);
+        rigidBodies.add(body);
     }
 
 }
