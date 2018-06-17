@@ -186,7 +186,7 @@ public class RigidBody3D implements RigidBody {
 	}
 	@Override
 	public double[] getState() {
-	    double[] y = new double[] {};
+	    double[] y = new double[13];
 	    y[0] = position.x;
 	    y[1] = position.y;
 	    y[2] = position.z;
@@ -209,7 +209,7 @@ public class RigidBody3D implements RigidBody {
 	public double[] getDerivativeState() {
 	    updateForce();
 	    updateTorque();
-	    double[] y= new double[] {};
+	    double[] y= new double[13];
 	    //xdot
 	    y[0] = position.x;
 	    y[1] = position.y;
