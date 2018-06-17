@@ -1,6 +1,6 @@
 package physics.models.bodies;
 
-import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_POLYGON;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glColor3d;
 import static org.lwjgl.opengl.GL11.glEnd;
@@ -95,8 +95,8 @@ public class RigidBody3D implements RigidBody {
 	    Vector3f v6 = Vector3f.add(Matrix3f.transform(R, new Vector3f(size.x / 2, size.y / 2, -size.z / 2), null),position,null);
 	    Vector3f v7 = Vector3f.add(Matrix3f.transform(R, new Vector3f(-size.x / 2, size.y / 2, size.z / 2), null),position,null);
 	    Vector3f v8 = Vector3f.add(Matrix3f.transform(R, new Vector3f(size.x / 2, size.y / 2, size.z / 2), null),position,null);
-	    glBegin(GL_LINES);
-	    glColor3d(1, 1, 1);
+	    glBegin(GL_POLYGON);
+	    glColor3d(1, 0, 0);
 	    glVertex3d(v1.x, v1.y, v1.z);
 	    glVertex3d(v2.x, v2.y, v2.z);
 	    glVertex3d(v1.x, v1.y, v1.z);
