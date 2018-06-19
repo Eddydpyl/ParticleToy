@@ -14,4 +14,13 @@ public class Vector2fWithCross extends Vector2f{
 	static public float cross(Vector2fWithCross v1,Vector2fWithCross v2) {
 		return  v1.x * v2.y - v1.y * v2.x;
 	}
+	static public Vector2fWithCross CrossProduct( Vector2fWithCross a, float s )
+	{
+	  return new Vector2fWithCross( s * a.y, -s * a.x );
+	}
+	 
+	static public Vector2fWithCross CrossProduct( float s, Vector2fWithCross a )
+	{
+	  return new Vector2fWithCross( -s * a.y, s * a.x );
+	}
 }

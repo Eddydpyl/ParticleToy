@@ -10,14 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.util.vector.Matrix2f;
-import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Vector2f;
 
-import physics.Quaternion;
 import physics.Vector2fWithCross;
 import physics.models.particles.Particle;
 import physics.models.particles.Particle2D;
-import physics.models.particles.Particle3D;
 
 public class RigidBody2D implements RigidBody {
 	private List<Particle2D> particles;
@@ -26,7 +23,6 @@ public class RigidBody2D implements RigidBody {
 	private float iBody,iBodyInv;
 	
 	private Vector2fWithCross position;
-	private Vector2fWithCross velocity;
 	private Vector2fWithCross P;
 	private float L;
 	private Vector2fWithCross size;
@@ -43,13 +39,14 @@ public class RigidBody2D implements RigidBody {
 		constructPos = (Vector2fWithCross) startPos;
 		size = (Vector2fWithCross) s;
 		initializeVariables();
-		
+		double density = particleMass / size.x + 1500.f;
 	    //generate particles with body coordinates
 	    for (int x = 0; x < numParticles.x; x++) {
 	        for (int y = 0; y < numParticles.y; y++) {
 	                double xStart = -size.x / 2 + size.x * (float) x / (numParticles.x - 1);
 	                double yStart = -size.y / 2 + size.y * (float) y / (numParticles.y - 1);
-	                Particle2D p = new Particle2D(new double[] {position.x+xStart, position.y+yStart}, particleMass);
+	                Particle2D p = new Particle2D(new double[] {xStart,yStart}, particleMass);
+//	                p.setDensity(density);
 	                particles.add(p);
 	        }
 	    }
@@ -116,8 +113,8 @@ public class RigidBody2D implements RigidBody {
 		torque = 0;
 	    for (Particle p : particles) {
 	    	Vector2fWithCross f = new Vector2fWithCross((float)p.getForces()[0],(float)p.getForces()[1]);
-	    	Vector2fWithCross po = new Vector2fWithCross((float)p.getPosition()[0],(float)p.getPosition()[1]);
-	    	torque+= Vector2fWithCross.cross(po, f);
+	    	Vector2fWithCross po = new Vector2fWithCross((float)p.getPosition()[0]-position.x,(float)p.getPosition()[1]-position.y);
+	    	torque += Vector2fWithCross.cross(po, f);
 	    }
 	}
 	@Override
@@ -135,7 +132,7 @@ public class RigidBody2D implements RigidBody {
 	    for (Particle p : particles) {
 	    	Vector2f conPos = new Vector2f((float)p.getConstructPos()[0],(float)p.getConstructPos()[1]);
 	    	Vector2f pos = Matrix2f.transform(R, conPos, null);
-	        p.setPosition(new double[]{pos.x,pos.y});
+	        p.setPosition(new double[]{pos.x+position.x,pos.y+position.y});
 	    }
 
 	    //Compute auxiliary variables
@@ -169,7 +166,7 @@ public class RigidBody2D implements RigidBody {
 	    double[] y= new double[13];
 	    y[0] = v.x;
 	    y[1] = v.y;
-	    y[2] = L * omega;
+	    y[2] = omega;
 	    y[3] = force.x;
 	    y[4] = force.y;
 	    y[5] = torque;

@@ -313,13 +313,14 @@ public class Main {
             }
         }
         Vector2fWithCross pos = new Vector2fWithCross(0,1);
-        Vector2fWithCross size = new Vector2fWithCross(1,1);
+        Vector2fWithCross size = new Vector2fWithCross(0.5f,0.5f);
         Vector2fWithCross noParticles = new Vector2fWithCross(3,3);
         
-        RigidBody2D body = new RigidBody2D(pos, size, noParticles, 5.0f);
+        RigidBody2D body = new RigidBody2D(pos, size, noParticles, 20f);
         rigidBodies.add(body);
         for(Particle2D p : body.getParticles()) {
         	particles.add(p);
+        	forces.add(new GravityForce2D(p));
         }
     }
 
