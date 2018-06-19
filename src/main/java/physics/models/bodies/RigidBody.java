@@ -3,11 +3,16 @@ package physics.models.bodies;
 import static physics.LinearSolver.vecAdd;
 import static physics.LinearSolver.vecTimesScalar;
 
+import java.util.List;
+
+import physics.models.particles.Particle;
+
 public interface RigidBody {
 
     static void updateState(RigidBody rigidBody, double time) {
     	double[] state = rigidBody.getState();
         rigidBody.setState(vecAdd(state, vecTimesScalar(rigidBody.getDerivativeState(), time)));
+        
     }
 
 	public void draw();

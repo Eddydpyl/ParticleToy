@@ -1,6 +1,6 @@
 package physics.models.bodies;
 
-import static org.lwjgl.opengl.GL11.GL_POLYGON;
+import static org.lwjgl.opengl.GL11.GL_LINES;
 import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glColor3d;
 import static org.lwjgl.opengl.GL11.glEnd;
@@ -17,7 +17,7 @@ import physics.models.particles.Particle;
 import physics.models.particles.Particle3D;
 
 public class RigidBody3D implements RigidBody {
-	private List<Particle3D> particles;
+	private List<Particle> particles;
 	private Vector3f constructPos;
 	private double mass;
 	private Matrix3f iBody,iBodyInv;
@@ -83,7 +83,7 @@ public class RigidBody3D implements RigidBody {
 	    Matrix3f.transform(Iinv, L, omega);
 	    force = new Vector3f(0, 0, 0);
 	    torque = new Vector3f(0, 0, 0);
-	    particles = new ArrayList<Particle3D>();
+	    particles = new ArrayList<Particle>();
 	}
 	@Override
 	public void draw() {
@@ -95,7 +95,7 @@ public class RigidBody3D implements RigidBody {
 	    Vector3f v6 = Vector3f.add(Matrix3f.transform(R, new Vector3f(size.x / 2, size.y / 2, -size.z / 2), null),position,null);
 	    Vector3f v7 = Vector3f.add(Matrix3f.transform(R, new Vector3f(-size.x / 2, size.y / 2, size.z / 2), null),position,null);
 	    Vector3f v8 = Vector3f.add(Matrix3f.transform(R, new Vector3f(size.x / 2, size.y / 2, size.z / 2), null),position,null);
-	    glBegin(GL_POLYGON);
+	    glBegin(GL_LINES);
 	    glColor3d(1, 0, 0);
 	    glVertex3d(v1.x, v1.y, v1.z);
 	    glVertex3d(v2.x, v2.y, v2.z);
@@ -210,12 +210,10 @@ public class RigidBody3D implements RigidBody {
 	    updateForce();
 	    updateTorque();
 	    double[] y= new double[13];
-	    //xdot
-	    y[0] = position.x;
-	    y[1] = position.y;
-	    y[2] = position.z;
+	    y[0] = v.x;
+	    y[1] = v.y;
+	    y[2] = v.z;
 
-	    //calculate product, convert to resulting matrix to quaternion
 	    Quaternion omegaQuaternion= new Quaternion(0, omega.x, omega.y, omega.z);
 	    Quaternion qdot= omegaQuaternion.mult(q);
 	    y[3] = qdot.w * 0.05f;
@@ -223,15 +221,16 @@ public class RigidBody3D implements RigidBody {
 	    y[5] = qdot.y * 0.05f;
 	    y[6] = qdot.z * 0.05f;
 
-	    //Pdot = F
 	    y[7] = force.x;
 	    y[8] = force.y;
 	    y[9] = force.z;
 
-	    //Ldot = torque
 	    y[10] = torque.x;
 	    y[11] = torque.y;
 	    y[12] = torque.z;
 	    return y;
+	}
+	public List<Particle> getParticles() {
+		return particles;
 	}
 }

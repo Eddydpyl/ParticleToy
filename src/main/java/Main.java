@@ -3,11 +3,15 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
+import physics.Vector2fWithCross;
+
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import physics.models.Grid2D;
 import physics.models.bodies.RigidBody;
+import physics.models.bodies.RigidBody2D;
 import physics.models.bodies.RigidBody3D;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
@@ -48,7 +52,7 @@ public class Main {
     private List<Force> forces;
     private List<Constraint> constraints;
     private List<Solid> solids;
-    private List<RigidBody3D> rigidBodies;
+    private List<RigidBody2D> rigidBodies;
     private Grid2D grid;
 
     private Particle2D mouseParticle;
@@ -297,23 +301,26 @@ public class Main {
     private void createLiquid(int width, int height, double distance, double mass) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
-//        for(int i = 0; i < width; i++) {
-//            for (int j = 0; j < height; j++) {
-//                particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
-//            }
-//        }
-//        for (Particle particle : particles) {
-//            if (particle instanceof FluidParticle2D) {
-//                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
-//                forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
-//            }
-//        }
-        Vector3f pos = new Vector3f(-2,-3,1);
-        Vector3f size = new Vector3f(2,2,2);
-        Vector3f noParticles = new Vector3f(30,30,30);
+        for(int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+            }
+        }
+        for (Particle particle : particles) {
+            if (particle instanceof FluidParticle2D) {
+                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
+                forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
+            }
+        }
+        Vector2fWithCross pos = new Vector2fWithCross(0,1);
+        Vector2fWithCross size = new Vector2fWithCross(1,1);
+        Vector2fWithCross noParticles = new Vector2fWithCross(3,3);
         
-        RigidBody3D body = new RigidBody3D(pos, size, noParticles, 3.0f);
+        RigidBody2D body = new RigidBody2D(pos, size, noParticles, 5.0f);
         rigidBodies.add(body);
+        for(Particle2D p : body.getParticles()) {
+        	particles.add(p);
+        }
     }
 
 }
