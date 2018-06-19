@@ -3,8 +3,16 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
+import physics.Vector2fWithCross;
+
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
+
 import physics.models.Grid2D;
+import physics.models.bodies.RigidBody;
+import physics.models.bodies.RigidBody2D;
+import physics.models.bodies.RigidBody3D;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
 import physics.models.forces.*;
@@ -44,6 +52,7 @@ public class Main {
     private List<Force> forces;
     private List<Constraint> constraints;
     private List<Solid> solids;
+    private List<RigidBody2D> rigidBodies;
     private Grid2D grid;
 
     private Particle2D mouseParticle;
@@ -209,8 +218,8 @@ public class Main {
     }
 
     private void defaultState() {
-        showGrid = true;
-        reset(Integration.IMPLICIT_EURLER, ZOOM_0);
+        showGrid = false;
+        reset(Integration.EULER, ZOOM_1);
         createLiquid(10, 10, 0.01, 0.1);
     }
 
@@ -218,6 +227,7 @@ public class Main {
         this.method = method;
         this.zoomLevel = zoomLevel;
         particles = new ArrayList<>();
+        rigidBodies = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         solids = new ArrayList<>();
@@ -246,7 +256,7 @@ public class Main {
         Constraint.apply(particles, constraints, 5, 5);
 
         // Update all the particles' state
-        Integration.apply(particles, DELTA, method);
+        Integration.apply(particles,rigidBodies, DELTA, method);
     }
 
     private void draw(boolean drawGrid) {
@@ -254,6 +264,7 @@ public class Main {
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
         for (Solid solid : solids) solid.draw();
+        for (RigidBody rigidBody : rigidBodies) rigidBody.draw();
         if (drawGrid) grid.draw();
     }
 
@@ -300,6 +311,16 @@ public class Main {
                 FluidParticle2D fluidParticle = (FluidParticle2D) particle;
                 forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
             }
+        }
+        Vector2fWithCross pos = new Vector2fWithCross(0,1);
+        Vector2fWithCross size = new Vector2fWithCross(0.5f,0.5f);
+        Vector2fWithCross noParticles = new Vector2fWithCross(3,3);
+        
+        RigidBody2D body = new RigidBody2D(pos, size, noParticles, 20f);
+        rigidBodies.add(body);
+        for(Particle2D p : body.getParticles()) {
+        	particles.add(p);
+        	forces.add(new GravityForce2D(p));
         }
     }
 
