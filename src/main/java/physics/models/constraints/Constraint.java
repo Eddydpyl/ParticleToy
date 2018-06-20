@@ -29,7 +29,7 @@ public interface Constraint {
             Particle particle = particles.get(i);
             for (int j = 0; j < dimensions; j++) {
                 W.set(dimensions * i + j, dimensions * i + j, 1 / particle.getMass());
-                Q.set(dimensions * i + j, particle.getForces()[j]);
+                Q.set(dimensions * i + j, particle.getForce()[j]);
                 q1.set(dimensions * i + j, particle.getVelocity()[j]);
             }
         }
@@ -58,7 +58,7 @@ public interface Constraint {
         SimpleMatrix QH = J0.transpose().mult(lambda);
         for (int i = 0; i < particles.size(); i++) {
             Particle particle = particles.get(i);
-            double[] forces = particle.getForces();
+            double[] forces = particle.getForce();
             for (int j = 0; j < dimensions; j++) {
                 forces[j] += QH.get(dimensions * i + j);
             }

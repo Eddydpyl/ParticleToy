@@ -31,7 +31,7 @@ public class PressureForce2D implements Force {
                 forces = vecAdd(forces, vecTimesScalar(kernel.applyGradient(fluidParticle),
                         fluidParticle.getMass() * (pressure(particle) + pressure(fluidParticle)) / (2 * fluidParticle.getDensity())));
             }
-        } particle.setForces(vecDiff(particle.getForces(), forces));
+        } particle.setForce(vecDiff(particle.getForce(), forces));
     }
 
     @Override

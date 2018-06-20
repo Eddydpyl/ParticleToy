@@ -34,7 +34,7 @@ public class SurfaceForce2D implements Force{
                     forces = vecAdd(forces, vecTimesScalar(gradient, sigma * laplacian * vecModule(gradient)));
                 }
             }
-        } particle.setForces(vecDiff(particle.getForces(), forces));
+        } particle.setForce(vecDiff(particle.getForce(), forces));
     }
 
     @Override

@@ -5,14 +5,13 @@ import org.lwjgl.system.*;
 import physics.Integration;
 import org.lwjgl.util.glu.GLU;
 import physics.models.Grid2D;
+import physics.models.particles.Rectangle2D;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
 import physics.models.forces.*;
 import physics.models.particles.FluidParticle2D;
 import physics.models.particles.Particle;
 import physics.models.particles.Particle2D;
-import physics.models.solids.Floor;
-import physics.models.solids.Solid;
 
 import java.nio.*;
 import java.util.ArrayList;
@@ -33,7 +32,8 @@ public class Main {
     private static final int HEIGHT = 800;
     private static final double DELTA = 0.005;
     private static final double EPSILON = 0.05;
-    private static final double H = 0.05;
+    private static final double RATIO = Math.pow(10, -15);
+    private static final double H = 0.1;
     
     private long window;
     private int method;
@@ -43,7 +43,6 @@ public class Main {
     private List<Particle2D> particles;
     private List<Force> forces;
     private List<Constraint> constraints;
-    private List<Solid> solids;
     private Grid2D grid;
 
     private Particle2D mouseParticle;
@@ -195,6 +194,7 @@ public class Main {
     private void simulate(double time) {
         updateZoom();
         updateParticles();
+
         draw(showGrid); // Draw all particles, forces and constraints.
 
         int key1State = glfwGetKey(window, GLFW_KEY_1);
@@ -203,15 +203,15 @@ public class Main {
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
             showGrid = false;
-            reset(Integration.IMPLICIT_EURLER, ZOOM_1);
+            reset(Integration.EULER, ZOOM_1);
             createCloth2D(20, 10, 0.1, 0.1, 5,5, true);
         }
     }
 
     private void defaultState() {
-        showGrid = true;
-        reset(Integration.IMPLICIT_EURLER, ZOOM_0);
-        createLiquid(10, 10, 0.01, 0.1);
+        showGrid = false;
+        reset(Integration.EULER, ZOOM_0);
+        createLiquid(10, 10, 0.01, 0.00001);
     }
 
     private void reset(int method, int zoomLevel) {
@@ -220,8 +220,7 @@ public class Main {
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        solids = new ArrayList<>();
-        grid = new Grid2D(new double[]{-1,1}, 40, H);
+        grid = new Grid2D(new double[]{-1,1}, (int) (200 * H), H);
     }
 
     private void updateZoom() {
@@ -231,16 +230,13 @@ public class Main {
 
     private void updateParticles() {
         // Clear force accumulators
-        for (Particle particle : particles) particle.clearForces();
+        for (Particle particle : particles) particle.clearForce();
 
         // Calculate density for liquids
         grid.update(particles);
 
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
-
-        // Collisions
-        for (Solid solid : solids) solid.apply();
 
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, 5, 5);
@@ -253,7 +249,6 @@ public class Main {
         for (Particle particle : particles) particle.draw();
         for (Force force : forces) force.draw();
         for (Constraint constraint : constraints) constraint.draw();
-        for (Solid solid : solids) solid.draw();
         if (drawGrid) grid.draw();
     }
 
@@ -268,7 +263,7 @@ public class Main {
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                particles.add(new Particle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+                particles.add(new Rectangle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, 0.01, 0.01, mass));
             }
         }
         for (int i = 0; i < particles.size(); i++) {
@@ -284,7 +279,7 @@ public class Main {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
-        if (floor) solids.add(new Floor(particles, new double[]{0,-height*distance}, 0.5, 0.001));
+        if (floor) particles.add(new Rectangle2D(new double[]{0,-height*distance}, 2,0.1, 10, false, true));
     }
 
     private void createLiquid(int width, int height, double distance, double mass) {
@@ -295,10 +290,14 @@ public class Main {
                 particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
             }
         }
+        particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.2, 0.2, 10));
         for (Particle particle : particles) {
-            if (particle instanceof FluidParticle2D) {
-                FluidParticle2D fluidParticle = (FluidParticle2D) particle;
-                forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H));
+            if (particle instanceof Particle2D) {
+                if (particle instanceof FluidParticle2D) {
+                    FluidParticle2D fluidParticle = (FluidParticle2D) particle;
+                    forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H, mass * RATIO));
+                    forces.add(new GravityForce2D((Particle2D) particle));
+                }
             }
         }
     }
