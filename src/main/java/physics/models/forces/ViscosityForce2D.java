@@ -29,7 +29,7 @@ public class ViscosityForce2D implements Force{
                 forces = vecAdd(forces, vecTimesScalar(vecDiff(fluidParticle.getVelocity(), particle.getVelocity()),
                         fluidParticle.getMass() * kernel.applyLaplacian(fluidParticle) / fluidParticle.getDensity()));
             }
-        } particle.setForces(vecAdd(particle.getForces(), vecTimesScalar(forces, mu)));
+        } particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(forces, mu)));
     }
 
     @Override

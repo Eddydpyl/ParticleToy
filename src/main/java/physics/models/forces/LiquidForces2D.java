@@ -15,7 +15,6 @@ import static physics.LinearSolver.*;
 
 public class LiquidForces2D implements Force {
 
-    private static final double W = 0.000000000001;
     private static final double K = 8.3145;
     private static final double T = 0.001;
 
@@ -25,14 +24,16 @@ public class LiquidForces2D implements Force {
     private double mu;
     private double p0;
     private double h;
+    private double w; // Auxiliary variable scaling forces.
 
-    public LiquidForces2D(FluidParticle2D particle, Grid2D grid2D, double sigma, double mu, double p0, double h) {
+    public LiquidForces2D(FluidParticle2D particle, Grid2D grid2D, double sigma, double mu, double p0, double h, double w) {
         this.particle = particle;
         this.grid2D = grid2D;
         this.sigma = sigma;
         this.mu = mu;
         this.p0 = p0;
         this.h = h;
+        this.w = w;
     }
 
     @Override
@@ -56,9 +57,9 @@ public class LiquidForces2D implements Force {
                 }
             }
         }
-        particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(pressureForces, W)));
-        particle.setForces(vecDiff(particle.getForces(), vecTimesScalar(surfaceForces, W)));
-        particle.setForces(vecAdd(particle.getForces(), vecTimesScalar(viscousForces, W)));
+        particle.setForce(vecDiff(particle.getForce(), vecTimesScalar(pressureForces, w)));
+        particle.setForce(vecDiff(particle.getForce(), vecTimesScalar(surfaceForces, w)));
+        particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(viscousForces, w)));
     }
 
     @Override

@@ -30,12 +30,12 @@ public class SpringForce2D implements Force {
         double[] spring = vecTimesScalar(posDiff, magnitude);
         if (p1 instanceof FluidParticle2D) {
             FluidParticle2D fluidParticle = (FluidParticle2D) p1;
-            fluidParticle.setForces(vecDiff(p1.getForces(), vecTimesScalar(spring, fluidParticle.getDensity())));
-        } else p1.setForces(vecDiff(p1.getForces(), spring));
+            fluidParticle.setForce(vecDiff(p1.getForce(), vecTimesScalar(spring, fluidParticle.getDensity())));
+        } else p1.setForce(vecDiff(p1.getForce(), spring));
         if (p2 instanceof FluidParticle2D) {
             FluidParticle2D fluidParticle = (FluidParticle2D) p2;
-            fluidParticle.setForces(vecAdd(p2.getForces(), vecTimesScalar(spring, fluidParticle.getDensity())));
-        } else p2.setForces(vecAdd(p2.getForces(), spring));
+            fluidParticle.setForce(vecAdd(p2.getForce(), vecTimesScalar(spring, fluidParticle.getDensity())));
+        } else p2.setForce(vecAdd(p2.getForce(), spring));
     }
 
     @Override

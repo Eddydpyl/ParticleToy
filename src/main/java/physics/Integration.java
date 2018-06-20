@@ -15,59 +15,45 @@ public class Integration {
     public static void apply(List<? extends Particle> particles, double time, int mode) {
         switch (mode) {
             case EULER: {
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
             } break;
             case MID_POINT: {
                 double[][] original = saveState(particles);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
                 double[][] euler = saveState(particles);
                 double[][] diff = stateDiff(euler, original);
                 double[][] middle = stateAdd(original, stateTimesScalar(diff, 1.0 / 2.0));
                 loadState(particles, middle);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
             } break;
             case RUNGE_KUTA: {
                 double[][] o1 = saveState(particles);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
                 double[][] e1 = saveState(particles);
                 double[][] k1 = stateDiff(e1, o1);
 
                 double[][] o2 = stateAdd(o1, stateTimesScalar(k1, 1.0 / 2.0));
                 loadState(particles, o2);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
                 double[][] e2 = saveState(particles);
                 double[][] k2 = stateDiff(e2, o2);
 
                 double[][] o3 = stateAdd(o1, stateTimesScalar(k2, 1.0 / 2.0));
                 loadState(particles, o3);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
                 double[][] e3 = saveState(particles);
                 double[][] k3 = stateDiff(e3, o3);
 
                 double[][] o4 = stateAdd(o1, k3);
                 loadState(particles, o4);
-                for (Particle particle : particles) {
-                    Particle.updateVelocity(particle, time);
-                    Particle.updatePosition(particle, time);
-                }
+                for (Particle particle : particles)
+                    particle.updateState(time);
                 double[][] e4 = saveState(particles);
                 double[][] k4 = stateDiff(e4, o4);
 
@@ -75,19 +61,20 @@ public class Integration {
                         stateAdd(stateTimesScalar(k3, 1.0 / 3.0), stateTimesScalar(k4, 1.0 / 6.0)));
 
                 loadState(particles, stateAdd(o1, ks));
-            } break;
+                } break;
             case IMPLICIT_EURLER: {
+                // TODO: Implement for RigidBody
                 int dimensions = particles.get(0).getConstructPos().length;
                 SimpleMatrix TS = new SimpleMatrix(particles.size() * dimensions, particles.size() * dimensions);
                 SimpleMatrix F1 = new SimpleMatrix(1, particles.size() * dimensions);
                 SimpleMatrix F2 = new SimpleMatrix(particles.size() * dimensions, particles.size() * dimensions);
                 for (int i = 0; i < particles.size(); i++) {
                     Particle particle = particles.get(i);
-                    Particle.updateVelocity(particle, time);
+                    particle.updateVelocity(time);
                     for (int j = 0; j < dimensions; j++) {
                         TS.set(dimensions * i + j, dimensions * i + j, 1 / time);
                         F1.set(dimensions * i + j, particle.getVelocity()[j]);
-                        F2.set(dimensions * i + j, dimensions * i + j, particle.getForces()[j]);
+                        F2.set(dimensions * i + j, dimensions * i + j, particle.getForce()[j]);
                     }
                 }
                 SimpleMatrix DX = TS.minus(F2).solve(F1.transpose());
@@ -103,6 +90,7 @@ public class Integration {
         }
     }
 
+    // TODO: Implement for RigidBody
     private static double[][] saveState(List<? extends Particle> particles){
         int dimensions = particles.get(0).getConstructPos().length;
         double[][] state = new double[particles.size()][2 * dimensions];
@@ -115,6 +103,7 @@ public class Integration {
         } return state;
     }
 
+    // TODO: Implement for RigidBody
     private static void loadState(List<? extends Particle> particles, double[][] state){
         int dimensions = particles.get(0).getConstructPos().length;
         for (int i = 0; i < particles.size(); i++){
@@ -128,6 +117,7 @@ public class Integration {
         }
     }
 
+    // TODO: Implement for RigidBody
     private static double[][] stateAdd(double[][] s1, double[][] s2) {
         double[][] res = new double[s1.length][s1[0].length];
         for (int i = 0; i < s1.length; i++) {
@@ -137,6 +127,7 @@ public class Integration {
         } return res;
     }
 
+    // TODO: Implement for RigidBody
     private static double[][] stateDiff(double[][] s1, double[][] s2) {
         double[][] res = new double[s1.length][s1[0].length];
         for (int i = 0; i < s1.length; i++) {
@@ -146,6 +137,7 @@ public class Integration {
         } return res;
     }
 
+    // TODO: Implement for RigidBody
     private static double[][] stateTimesScalar(double[][] state, double n) {
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[0].length; j++) {

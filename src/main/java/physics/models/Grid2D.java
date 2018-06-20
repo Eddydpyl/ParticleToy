@@ -2,7 +2,7 @@ package physics.models;
 
 import physics.models.kernels.Poly6Kernel;
 import physics.models.particles.FluidParticle2D;
-import physics.models.particles.Particle2D;
+import physics.models.particles.Particle;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ public class Grid2D {
         this.h = h;
     }
 
-    public void update(List<Particle2D> particles) {
+    public void update(List<? extends Particle> particles) {
         // Reset all cells in the matrix
         for (int i = 0; i < cells; i++) {
             for (int j = 0; j < cells; j++) {

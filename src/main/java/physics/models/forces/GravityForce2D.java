@@ -17,12 +17,12 @@ public class GravityForce2D implements Force {
 
     @Override
     public void apply() {
-        double[] current = particle.getForces();
+        double[] current = particle.getForce();
         double[] gravity = new double[]{0, - particle.getMass() * G};
         if (particle instanceof FluidParticle2D) {
             FluidParticle2D fluidParticle = (FluidParticle2D) particle;
-            fluidParticle.setForces(vecAdd(current, vecTimesScalar(gravity, fluidParticle.getDensity())));
-        } else particle.setForces(vecAdd(current, gravity));
+            fluidParticle.setForce(vecAdd(current, vecTimesScalar(gravity, fluidParticle.getDensity())));
+        } else particle.setForce(vecAdd(current, gravity));
     }
 
     @Override
