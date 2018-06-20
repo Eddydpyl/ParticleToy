@@ -20,8 +20,8 @@ public class Rectangle2D extends RigidBody2D {
         this.height =  height;
     }
 
-    public Rectangle2D(double[] constructPos, double width, double height, double mass, boolean active, boolean draw) {
-        super(constructPos, mass, active, draw, new double[]{width, height});
+    public Rectangle2D(double[] constructPos, double width, double height, double mass, boolean active, boolean rotate, boolean draw) {
+        super(constructPos, mass, active, rotate, draw, new double[]{width, height});
         this.width = width;
         this.height =  height;
     }

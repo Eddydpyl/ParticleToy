@@ -204,8 +204,8 @@ public class Main {
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
             showGrid = false;
-            reset(Integration.EULER, ZOOM_1);
-            createCloth2D(20, 10, 0.1, 0.1, 5,5, true);
+            reset(Integration.EULER, ZOOM_0);
+            createCloth2D(5, 5, 0.1, 0.005, 5,5);
         }
     }
 
@@ -262,12 +262,12 @@ public class Main {
      * @param distance Space between each particle and its neighbors.
      * @param mass Weight of all of the particles.
      */
-    private void createCloth2D(int width, int height, double distance, double mass, double ks, double kd, boolean floor) {
+    private void createCloth2D(int width, int height, double distance, double mass, double ks, double kd) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                particles.add(new Rectangle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, 0.01, 0.01, mass));
+                particles.add(new Rectangle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, 0.02, 0.02, mass, true, false, true));
             }
         }
         for (int i = 0; i < particles.size(); i++) {
@@ -283,7 +283,6 @@ public class Main {
             Particle2D particle = particles.get(i * height);
             constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
-        if (floor) particles.add(new Rectangle2D(new double[]{0,-height*distance}, 2,0.1, 10, false, true));
     }
 
     private void createLiquid(int width, int height, double distance, double mass) {
