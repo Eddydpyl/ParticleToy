@@ -207,6 +207,18 @@ public class Main {
             reset(Integration.EULER, ZOOM_0);
             createCloth2D(5, 5, 0.1, 0.005, 5,5);
         }
+        int key3State = glfwGetKey(window, GLFW_KEY_3);
+        if (key3State == GLFW_PRESS) {
+            showGrid = false;
+            reset(Integration.EULER, ZOOM_0);
+            createLiquidWithCloth();
+        }
+        int key4State = glfwGetKey(window, GLFW_KEY_4);
+        if (key4State == GLFW_PRESS) {
+            showGrid = false;
+            reset(Integration.EULER, ZOOM_0);
+            createLiquidWithRectangular();
+        }
     }
 
     private void defaultState() {
@@ -293,8 +305,8 @@ public class Main {
                 particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
             }
         }
-        particles.add(new Rectangle2D(new double[]{0.1, -0.2}, 0.2, 0.2, 0.1));
-        particles.add(new Rectangle2D(new double[]{0.1, -0.5}, 0.2, 0.2, 0.1));
+//        particles.add(new Rectangle2D(new double[]{0.1, -0.2}, 0.2, 0.2, 0.1));
+//        particles.add(new Rectangle2D(new double[]{0.1, -0.5}, 0.2, 0.2, 0.1));
         for (Particle particle : particles) {
             if (particle instanceof Particle2D) {
                 if (particle instanceof FluidParticle2D) {
@@ -304,6 +316,21 @@ public class Main {
                 }
             }
         }
+    }
+    private void createLiquidWithRectangular() {
+      createLiquid(10, 30, 0.01, 0.00001);
+      particles.add(new Rectangle2D(new double[]{0, -0.4}, 0.05, 0.05, 0.01));
+      particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.5, 0.1, 0.1,false,false,true));
+      particles.add(new Rectangle2D(new double[]{-0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
+      particles.add(new Rectangle2D(new double[]{0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
+    }
+    private void createLiquidWithCloth() {
+      createCloth2D(5, 5, 0.05, 0.005, 5,5);
+      createLiquid(10, 30, 0.01, 0.00001);
+    
+      particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.5, 0.1, 0.1,false,false,true));
+      particles.add(new Rectangle2D(new double[]{-0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
+      particles.add(new Rectangle2D(new double[]{0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
     }
 
 }
