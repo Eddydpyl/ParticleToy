@@ -11,6 +11,8 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
     double orientation, angular; // Expressed in radians.
     double[][] points, spins;
 
+    private boolean rotate; // Whether the object should rotate.
+
     public RigidBody2D(double[] constructPos, double mass, double[] params) {
         super(constructPos, mass);
         this.orientation = 0.0;
@@ -20,9 +22,10 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
         this.torque = new double[2];
         this.bInertia = calculateBodyInertia(params);
         this.bInertiaInv = bInertia.invert();
+        this.rotate = true;
     }
 
-    public RigidBody2D(double[] constructPos, double mass, boolean active, boolean draw, double[] params) {
+    public RigidBody2D(double[] constructPos, double mass, boolean active, boolean rotate, boolean draw, double[] params) {
         super(constructPos, mass, active, draw);
         this.orientation = 0.0;
         this.angular = 0.0;
@@ -31,6 +34,7 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
         this.torque = new double[2];
         this.bInertia = calculateBodyInertia(params);
         this.bInertiaInv = bInertia.invert();
+        this.rotate = rotate;
     }
 
     public RigidBody2D(double[] constructPos, double mass) {
@@ -42,9 +46,10 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
         this.torque = new double[2];
         this.bInertia = calculateBodyInertia(null);
         this.bInertiaInv = bInertia.invert();
+        this.rotate = true;
     }
 
-    public RigidBody2D(double[] constructPos, double mass,  boolean active, boolean draw) {
+    public RigidBody2D(double[] constructPos, double mass,  boolean active, boolean rotate, boolean draw) {
         super(constructPos, mass, active, draw);
         this.orientation = 0.0;
         this.angular = 0.0;
@@ -53,6 +58,7 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
         this.torque = new double[2];
         this.bInertia = calculateBodyInertia(null);
         this.bInertiaInv = bInertia.invert();
+        this.rotate = rotate;
     }
 
     public double[] getTorque() {
@@ -129,11 +135,11 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
     }
 
     public void updateAngular(double time) {
-        if (active) angular += vecCross(torque, inertia)[0] * time;
+        if (active && rotate) angular += vecCross(torque, inertia)[0] * time;
     }
 
     public void updateOrientation(double time) {
-        if (active) {
+        if (active && rotate) {
             double aux = orientation + angular * time;
             orientation = Math.atan2(Math.sin(aux), Math.cos(aux));
         }
