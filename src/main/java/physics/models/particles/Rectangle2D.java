@@ -68,8 +68,8 @@ public class Rectangle2D extends RigidBody2D {
         double width = params[0];
         double height = params[1];
         return new SimpleMatrix(new double[][]{
-                {width * Math.pow(height, 3) * (mass / 12), 0},
-                {0, Math.pow(width, 3) * height * (mass / 12)}
+                {width * Math.pow(height, 2) * (mass / 3), 0},
+                {0, Math.pow(width, 2) * height * (mass / 3)}
         });
     }
 

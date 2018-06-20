@@ -4,6 +4,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
 import org.lwjgl.util.glu.GLU;
+import physics.models.Collision;
 import physics.models.Grid2D;
 import physics.models.particles.Rectangle2D;
 import physics.models.constraints.CircularConstraint2D;
@@ -238,6 +239,9 @@ public class Main {
         // Compute and apply generic forces
         for (Force force : forces) force.apply();
 
+        // Collisions between particles
+        Collision.apply(particles, 0.2);
+
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, 5, 5);
 
@@ -290,7 +294,8 @@ public class Main {
                 particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
             }
         }
-        particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.2, 0.2, 10));
+        particles.add(new Rectangle2D(new double[]{0.1, -0.2}, 0.2, 0.2, 0.1));
+        particles.add(new Rectangle2D(new double[]{0.1, -0.5}, 0.2, 0.2, 0.1));
         for (Particle particle : particles) {
             if (particle instanceof Particle2D) {
                 if (particle instanceof FluidParticle2D) {
