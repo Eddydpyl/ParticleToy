@@ -4,7 +4,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 import physics.Integration;
 import org.lwjgl.util.glu.GLU;
-import physics.models.Collision;
+import physics.models.collisions.Collision2D;
 import physics.models.Grid2D;
 import physics.models.particles.Rectangle2D;
 import physics.models.constraints.CircularConstraint2D;
@@ -45,6 +45,7 @@ public class Main {
     private List<Force> forces;
     private List<Constraint> constraints;
     private Grid2D grid;
+    private Collision2D collision;
 
     private Particle2D mouseParticle;
     private Force mouseSpring;
@@ -234,6 +235,7 @@ public class Main {
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
         grid = new Grid2D(new double[]{-1,1}, (int) (200 * H), H);
+        collision = new Collision2D(0.2);
     }
 
     private void updateZoom() {
@@ -252,7 +254,7 @@ public class Main {
         for (Force force : forces) force.apply();
 
         // Collisions between particles
-        Collision.apply(particles, 0.2);
+        collision.apply(particles);
 
         // Compute and apply constraint forces
         Constraint.apply(particles, constraints, 5, 5);
