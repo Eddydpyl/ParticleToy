@@ -27,6 +27,16 @@ public class Rectangle2D extends RigidBody2D {
     }
 
     @Override
+    public SimpleMatrix calculateBodyInertia(double[] params) {
+        double width = params[0];
+        double height = params[1];
+        return new SimpleMatrix(new double[][]{
+                {width * Math.pow(height, 2) * (mass / 3), 0},
+                {0, Math.pow(width, 2) * height * (mass / 3)}
+        });
+    }
+
+    @Override
     public boolean containsPoint(double[] point) {
         double xMax = Stream.of(points).mapToDouble(x -> x[0]).max().getAsDouble();
         double xMin = Stream.of(points).mapToDouble(x -> x[0]).min().getAsDouble();
@@ -40,10 +50,10 @@ public class Rectangle2D extends RigidBody2D {
         double sin = Math.sin(orientation);
         double cos = Math.cos(orientation);
         return new double[][] {
-                new double[]{position[0] + ( width / 2 ) * cos - ( height / 2 ) * sin , position[1] + ( height / 2 ) * cos  + ( width / 2 ) * sin},
                 new double[]{position[0] - ( width / 2 ) * cos - ( height / 2 ) * sin , position[1] + ( height / 2 ) * cos  - ( width / 2 ) * sin},
+                new double[]{position[0] + ( width / 2 ) * cos - ( height / 2 ) * sin , position[1] + ( height / 2 ) * cos  + ( width / 2 ) * sin},
+                new double[]{position[0] + ( width / 2 ) * cos + ( height / 2 ) * sin , position[1] - ( height / 2 ) * cos  + ( width / 2 ) * sin},
                 new double[]{position[0] - ( width / 2 ) * cos + ( height / 2 ) * sin , position[1] - ( height / 2 ) * cos  - ( width / 2 ) * sin},
-                new double[]{position[0] + ( width / 2 ) * cos + ( height / 2 ) * sin , position[1] - ( height / 2 ) * cos  + ( width / 2 ) * sin}
         };
     }
 
@@ -61,16 +71,6 @@ public class Rectangle2D extends RigidBody2D {
             double d2 = vecDistance(e2[0], e2[1], position);
             return Double.compare(d1, d2);
         }).findFirst().get();
-    }
-
-    @Override
-    public SimpleMatrix calculateBodyInertia(double[] params) {
-        double width = params[0];
-        double height = params[1];
-        return new SimpleMatrix(new double[][]{
-                {width * Math.pow(height, 2) * (mass / 3), 0},
-                {0, Math.pow(width, 2) * height * (mass / 3)}
-        });
     }
 
     @Override

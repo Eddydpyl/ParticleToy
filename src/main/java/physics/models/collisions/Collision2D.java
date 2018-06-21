@@ -1,7 +1,8 @@
-package physics.models;
+package physics.models.collisions;
 
 import physics.models.particles.Particle;
-import physics.models.particles.RigidBody;
+import physics.models.particles.Particle2D;
+import physics.models.particles.RigidBody2D;
 
 import java.util.Collection;
 import java.util.Set;
@@ -10,36 +11,47 @@ import java.util.stream.Stream;
 
 import static physics.LinearSolver.*;
 
-public class Collision {
+public class Collision2D implements Collision {
 
-    public static void apply(Collection<? extends Particle> particles, double e) {
-        Set<Particle> bodies = particles.stream().filter(x -> x instanceof RigidBody).collect(Collectors.toSet());
+    private double e;
+
+    public Collision2D(double e) {
+        this.e = e;
+    }
+
+    @Override
+    public void apply(Collection<? extends Particle> particles) {
+        Set<Particle> bodies = particles.stream().filter(x -> x instanceof RigidBody2D).collect(Collectors.toSet());
         for (Particle body : bodies) {
             for (Particle particle : particles) {
-                resolve((RigidBody) body, particle, e);
+                resolve((RigidBody2D) body, (Particle2D) particle);
             }
         }
     }
 
-    private static void resolve(RigidBody body, Particle particle, double e) {
-        // TODO: Avoid penetration.
-        if (particle instanceof RigidBody) {
-            RigidBody pBody = (RigidBody) particle;
+    @Override
+    public void draw() {
+
+    }
+
+    private void resolve(RigidBody2D body, Particle2D particle) {
+        if (particle instanceof RigidBody2D) {
+            RigidBody2D pBody = (RigidBody2D) particle;
             Set<double[]> firstContains = Stream.of(pBody.calculatePoints()).filter(body::containsPoint).collect(Collectors.toSet());
             Set<double[]> secondContains = Stream.of(body.calculatePoints()).filter(pBody::containsPoint).collect(Collectors.toSet());
             if (firstContains.size() > 0)
-                resolveBodies(firstContains, body, pBody, e);
+                resolveBodies(firstContains, body, pBody);
             if (secondContains.size() > 0)
-                resolveBodies(secondContains, pBody, body, e);
+                resolveBodies(secondContains, pBody, body);
         } else if (body.containsPoint(particle.getPosition()))
-            resolveParticle(body, particle, e);
+            resolveParticle(body, particle);
     }
     
-    private static void resolveBodies(Set<double[]> points, RigidBody b1, RigidBody b2, double e) {
+    private void resolveBodies(Set<double[]> points, RigidBody2D b1, RigidBody2D b2) {
         for (double[] point : points) {
             double[][] edge = b1.calculateClosestEdge(point);
             double[] edgeVector = vecDiff(edge[1], edge[0]);
-            double[] normal = vecNorm(new double[]{- edgeVector[1], edgeVector[0]});
+            double[] normal = vecNorm(new double[]{edgeVector[1], - edgeVector[0]});
             double[] ra = vecDiff(point, b1.getPosition());
             double[] rb = vecDiff(point, b2.getPosition());
             double[] relativeVelocity = vecDiff(vecAdd(b1.getVelocity(), vecCross(ra, b1.getAngular())),
@@ -50,20 +62,22 @@ public class Collision {
             double r2 = Math.pow(vecCross(rb, normal)[0], 2) / vecModule(b2.getInertia());
             double[] impulse = vecTimesScalar(normal, (-(1 + e) * contactVelocity) / (r1 + r2 + 1 / b1.getMass() + 1 / b2.getMass()) / points.size());
             if (b1.isActive()) {
+                // TODO: Avoid penetration.
                 b1.setVelocity(vecDiff(b1.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / b1.getMass())));
                 b1.setAngular(b1.getAngular() + vecCross(ra, impulse)[0] / vecModule(b1.getInertia()));
             }
             if (b2.isActive()) {
+                // TODO: Avoid penetration.
                 b2.setVelocity(vecAdd(b2.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / b2.getMass())));
                 b2.setAngular(b2.getAngular() - vecCross(rb, impulse)[0] / vecModule(b2.getInertia()));
             }
         }
     }
 
-    private static void resolveParticle(RigidBody body, Particle particle, double e) {
+    private void resolveParticle(RigidBody2D body, Particle2D particle) {
         double[][] edge = body.calculateClosestEdge(particle.getPosition());
         double[] edgeVector = vecDiff(edge[1], edge[0]);
-        double[] normal = vecNorm(new double[]{-edgeVector[1], edgeVector[0]});
+        double[] normal = vecNorm(new double[]{edgeVector[1], - edgeVector[0]});
         double[] radius = vecDiff(particle.getPosition(), body.getPosition());
         double[] relativeVelocity = vecDiff(vecAdd(body.getVelocity(), vecCross(body.getAngular(), radius)), particle.getVelocity());
         double contactVelocity = vecDot(relativeVelocity, normal);
@@ -74,8 +88,15 @@ public class Collision {
             body.setVelocity(vecDiff(body.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / body.getMass())));
             body.setAngular(body.getAngular() + vecCross(radius, impulse)[0] / vecModule(body.getInertia()));
         }
-        if (particle.isActive())
+        if (particle.isActive()) {
+            double[] intersection = vecIntersection(particle.getPosition(), normal, edge[0], edgeVector);
+            double[] negativeNormal = vecNegate(normal);
+            double[] forceProjection = vecNegate(vecTimesScalar(negativeNormal,
+                    vecDot(negativeNormal, particle.getForce()) / Math.pow(vecModule(negativeNormal), 2)));
+            particle.setForce(vecAdd(particle.getForce(), forceProjection));
             particle.setVelocity(vecAdd(particle.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / particle.getMass())));
+            particle.setPosition(intersection);
+        }
     }
 
 }

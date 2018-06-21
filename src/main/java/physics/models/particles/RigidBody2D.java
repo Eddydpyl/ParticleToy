@@ -177,8 +177,9 @@ public abstract class RigidBody2D extends Particle2D implements RigidBody{
         return matrix;
     }
 
+    public abstract SimpleMatrix calculateBodyInertia(double[] params);
+
     public abstract boolean containsPoint(double[] point);
     public abstract double[][] calculatePoints();
     public abstract double[][] calculateClosestEdge(double[] position);
-    public abstract SimpleMatrix calculateBodyInertia(double[] params);
 }
