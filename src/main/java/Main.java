@@ -6,17 +6,16 @@ import physics.Integration;
 import org.lwjgl.util.glu.GLU;
 import physics.models.collisions.Collision2D;
 import physics.models.Grid2D;
-import physics.models.particles.Rectangle2D;
+import physics.models.particles.*;
 import physics.models.constraints.CircularConstraint2D;
 import physics.models.constraints.Constraint;
 import physics.models.forces.*;
-import physics.models.particles.FluidParticle2D;
-import physics.models.particles.Particle;
-import physics.models.particles.Particle2D;
 
 import java.nio.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -34,7 +33,7 @@ public class Main {
     private static final double DELTA = 0.005;
     private static final double EPSILON = 0.05;
     private static final double RATIO = Math.pow(10, -15);
-    private static final double H = 0.1;
+    private static final double H = 0.15;
     
     private long window;
     private int method;
@@ -217,15 +216,15 @@ public class Main {
         int key4State = glfwGetKey(window, GLFW_KEY_4);
         if (key4State == GLFW_PRESS) {
             showGrid = false;
-            reset(Integration.EULER, ZOOM_0);
+            reset(Integration.MID_POINT, ZOOM_0);
             createLiquidWithRectangular();
         }
     }
 
     private void defaultState() {
         showGrid = false;
-        reset(Integration.EULER, ZOOM_0);
-        createLiquid(10, 10, 0.01, 0.00001);
+        reset(Integration.MID_POINT, ZOOM_0);
+        createLiquid(new double[]{0,0}, 10, 10, 0.01, 0.00001);
     }
 
     private void reset(int method, int zoomLevel) {
@@ -234,7 +233,7 @@ public class Main {
         particles = new ArrayList<>();
         forces = new ArrayList<>();
         constraints = new ArrayList<>();
-        grid = new Grid2D(new double[]{-1,1}, (int) (200 * H), H);
+        grid = new Grid2D(new double[]{-1,1}, H);
         collision = new Collision2D(0.2);
     }
 
@@ -257,7 +256,7 @@ public class Main {
         collision.apply(particles);
 
         // Compute and apply constraint forces
-        Constraint.apply(particles, constraints, 5, 5);
+        Constraint.apply(constraints, 5, 5);
 
         // Update all the particles' state
         Integration.apply(particles, DELTA, method);
@@ -281,7 +280,8 @@ public class Main {
         double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                particles.add(new Rectangle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, 0.02, 0.02, mass, true, false, true));
+                RigidBody2D rectangle = new Rectangle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, 0.02, 0.02, mass, true, false, true);
+                particles.add(rectangle);
             }
         }
         for (int i = 0; i < particles.size(); i++) {
@@ -295,20 +295,26 @@ public class Main {
         }
         for (int i = 0; i < width; i++) {
             Particle2D particle = particles.get(i * height);
-            constraints.add(new CircularConstraint2D(particles.get(i * height), new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
+            constraints.add(new CircularConstraint2D(particle, new double[]{particle.getPosition()[0], particle.getPosition()[1] + 0.1}, 0));
         }
     }
 
-    private void createLiquid(int width, int height, double distance, double mass) {
+    /**
+     * @param width Number of particles across the liquid.
+     * @param height Number of particles down the liquid.
+     * @param distance Space between each particle and its neighbors.
+     * @param mass Weight of all of the particles.
+     */
+    private void createLiquid(double[] position, int width, int height, double distance, double mass) {
         if (width <= 1 || height <= 1) throw new IllegalArgumentException();
-        double[] rightFix = new double[]{(width - 1) * distance / 2, (height - 1) * distance / 2};
+        double[] rightFix = new double[]{position[0] + (width - 1) * distance / 2, position[1] + (height - 1) * distance / 2};
         for(int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                particles.add(new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass));
+                FluidParticle2D particle = new FluidParticle2D(new double[]{rightFix[0] - i * distance, rightFix[1] - j * distance}, mass);
+                particles.add(particle);
+
             }
         }
-//        particles.add(new Rectangle2D(new double[]{0.1, -0.2}, 0.2, 0.2, 0.1));
-//        particles.add(new Rectangle2D(new double[]{0.1, -0.5}, 0.2, 0.2, 0.1));
         for (Particle particle : particles) {
             if (particle instanceof Particle2D) {
                 if (particle instanceof FluidParticle2D) {
@@ -319,20 +325,31 @@ public class Main {
             }
         }
     }
+
     private void createLiquidWithRectangular() {
-      createLiquid(10, 30, 0.01, 0.00001);
-      particles.add(new Rectangle2D(new double[]{0, -0.4}, 0.05, 0.05, 0.01));
-      particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.5, 0.1, 0.1,false,false,true));
-      particles.add(new Rectangle2D(new double[]{-0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
-      particles.add(new Rectangle2D(new double[]{0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
-    }
-    private void createLiquidWithCloth() {
-      createCloth2D(5, 5, 0.05, 0.005, 5,5);
-      createLiquid(10, 30, 0.01, 0.00001);
-    
-      particles.add(new Rectangle2D(new double[]{0, -0.5}, 0.5, 0.1, 0.1,false,false,true));
-      particles.add(new Rectangle2D(new double[]{-0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
-      particles.add(new Rectangle2D(new double[]{0.25, -0.4}, 0.1, 0.3, 0.1,false,false,true));
+        createLiquid(new double[]{0,0.5},10, 30, 0.01, 0.00001);
+        particles.add(new Rectangle2D(new double[]{0.1, 0}, 0.2, 0.2, 0.01, true, true, true));
+        particles.add(new Rectangle2D(new double[]{-0.1, -0.3}, 0.2, 0.2, 0.01, true, true, true));
+        particles.add(new Rectangle2D(new double[]{0.1, -0.6}, 0.2, 0.2, 0.01, true, true, true));
+
+        particles.add(new Rectangle2D(new double[]{-1, 0}, 0.1, 5, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{1, 0}, 0.1, 5, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{0, -1}, 5, 0.1, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{0, 1}, 5, 0.1, 1,false,false,true));
     }
 
+    private void createLiquidWithCloth() {
+        createCloth2D(5, 5, 0.05, 1, 5000,5000);
+
+        createLiquid(new double[]{-0.25,-0.25}, 30, 10, 0.01, 0.00001);
+        for (Particle2D particle : particles) {
+            if (particle instanceof FluidParticle2D)
+                forces.add(new GravityForce2D(particle, new double[]{0.8, 1}));
+        }
+
+        particles.add(new Rectangle2D(new double[]{-1, 0}, 0.1, 5, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{1, 0}, 0.1, 5, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{0, -1}, 5, 0.1, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{0, 1}, 5, 0.1, 1,false,false,true));
+    }
 }

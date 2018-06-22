@@ -17,10 +17,10 @@ public class Grid2D {
     private int cells; // Number of cells in one side of the grid
     private double h; // Height and width of the cells
 
-    public Grid2D(double[] position, int cells, double h) {
+    public Grid2D(double[] position, double h) {
+        this.cells = (int) (2 / h);
         this.matrix = new FluidParticle2D[cells][cells][];
         this.position = position;
-        this.cells = cells;
         this.h = h;
     }
 
@@ -65,35 +65,37 @@ public class Grid2D {
     }
 
     public FluidParticle2D[] get(int[] index) {
-        FluidParticle2D[] upper = index[1] - 1 >= 0 && matrix[index[0]][index[1] - 1] != null ?
-                matrix[index[0]][index[1] - 1]: new FluidParticle2D[0];
-        FluidParticle2D[] lower = index[1] + 1 < cells && matrix[index[0]][index[1] + 1] != null ?
-                matrix[index[0]][index[1] + 1]: new FluidParticle2D[0];
-        FluidParticle2D[] left = index[0] - 1 >= 0 && matrix[index[0] - 1][index[1]] != null ?
-                matrix[index[0] - 1][index[1]]: new FluidParticle2D[0];
-        FluidParticle2D[] right = index[0] + 1 < cells && matrix[index[0] + 1][index[1]] != null ?
-                matrix[index[0] + 1][index[1]]: new FluidParticle2D[0];
-        FluidParticle2D[] upperLeft = index[0] - 1 >= 0 && index[1] - 1 >= 0 && matrix[index[0] - 1][index[1] - 1] != null ?
-                matrix[index[0] - 1][index[1] - 1]: new FluidParticle2D[0];
-        FluidParticle2D[] upperRight = index[0] + 1 < cells  && index[1] - 1 >= 0 && matrix[index[0] + 1][index[1] - 1] != null ?
-                matrix[index[0] + 1][index[1] - 1]: new FluidParticle2D[0];
-        FluidParticle2D[] lowerLeft = index[0] - 1 >= 0 && index[1] - 1 >= 0 && matrix[index[0] - 1][index[1] - 1] != null ?
-                matrix[index[0] - 1][index[1] - 1]: new FluidParticle2D[0];
-        FluidParticle2D[] lowerRight = index[0] - 1 >= 0 && index[1] + 1 < cells && matrix[index[0] - 1][index[1] + 1] != null ?
-                matrix[index[0] - 1][index[1] + 1]: new FluidParticle2D[0];
-        FluidParticle2D[] aux = new FluidParticle2D[upper.length + lower.length + left.length + right.length + upperLeft.length + upperRight.length +
-                lowerLeft.length + lowerRight.length + matrix[index[0]][index[1]].length];
-        int length = 0;
-        System.arraycopy(upper, 0, aux, length, upper.length); length += upper.length;
-        System.arraycopy(lower, 0, aux, length, lower.length); length += lower.length;
-        System.arraycopy(left, 0, aux, length, left.length); length += left.length;
-        System.arraycopy(right, 0, aux, length, right.length); length += right.length;
-        System.arraycopy(upperLeft, 0, aux, length, upperLeft.length); length += upperLeft.length;
-        System.arraycopy(upperRight, 0, aux, length, upperRight.length); length += upperRight.length;
-        System.arraycopy(lowerLeft, 0, aux, length, lowerLeft.length); length += lowerLeft.length;
-        System.arraycopy(lowerRight, 0, aux, length, lowerRight.length); length += lowerRight.length;
-        System.arraycopy(matrix[index[0]][index[1]], 0, aux, length, matrix[index[0]][index[1]].length);
-        return aux;
+        if (index != null) {
+            FluidParticle2D[] upper = index[1] - 1 >= 0 && matrix[index[0]][index[1] - 1] != null ?
+                    matrix[index[0]][index[1] - 1]: new FluidParticle2D[0];
+            FluidParticle2D[] lower = index[1] + 1 < cells && matrix[index[0]][index[1] + 1] != null ?
+                    matrix[index[0]][index[1] + 1]: new FluidParticle2D[0];
+            FluidParticle2D[] left = index[0] - 1 >= 0 && matrix[index[0] - 1][index[1]] != null ?
+                    matrix[index[0] - 1][index[1]]: new FluidParticle2D[0];
+            FluidParticle2D[] right = index[0] + 1 < cells && matrix[index[0] + 1][index[1]] != null ?
+                    matrix[index[0] + 1][index[1]]: new FluidParticle2D[0];
+            FluidParticle2D[] upperLeft = index[0] - 1 >= 0 && index[1] - 1 >= 0 && matrix[index[0] - 1][index[1] - 1] != null ?
+                    matrix[index[0] - 1][index[1] - 1]: new FluidParticle2D[0];
+            FluidParticle2D[] upperRight = index[0] + 1 < cells  && index[1] - 1 >= 0 && matrix[index[0] + 1][index[1] - 1] != null ?
+                    matrix[index[0] + 1][index[1] - 1]: new FluidParticle2D[0];
+            FluidParticle2D[] lowerLeft = index[0] - 1 >= 0 && index[1] - 1 >= 0 && matrix[index[0] - 1][index[1] - 1] != null ?
+                    matrix[index[0] - 1][index[1] - 1]: new FluidParticle2D[0];
+            FluidParticle2D[] lowerRight = index[0] - 1 >= 0 && index[1] + 1 < cells && matrix[index[0] - 1][index[1] + 1] != null ?
+                    matrix[index[0] - 1][index[1] + 1]: new FluidParticle2D[0];
+            FluidParticle2D[] aux = new FluidParticle2D[upper.length + lower.length + left.length + right.length + upperLeft.length + upperRight.length +
+                    lowerLeft.length + lowerRight.length + matrix[index[0]][index[1]].length];
+            int length = 0;
+            System.arraycopy(upper, 0, aux, length, upper.length); length += upper.length;
+            System.arraycopy(lower, 0, aux, length, lower.length); length += lower.length;
+            System.arraycopy(left, 0, aux, length, left.length); length += left.length;
+            System.arraycopy(right, 0, aux, length, right.length); length += right.length;
+            System.arraycopy(upperLeft, 0, aux, length, upperLeft.length); length += upperLeft.length;
+            System.arraycopy(upperRight, 0, aux, length, upperRight.length); length += upperRight.length;
+            System.arraycopy(lowerLeft, 0, aux, length, lowerLeft.length); length += lowerLeft.length;
+            System.arraycopy(lowerRight, 0, aux, length, lowerRight.length); length += lowerRight.length;
+            System.arraycopy(matrix[index[0]][index[1]], 0, aux, length, matrix[index[0]][index[1]].length);
+            return aux;
+        } else return new FluidParticle2D[0];
     }
 
     public void draw() {

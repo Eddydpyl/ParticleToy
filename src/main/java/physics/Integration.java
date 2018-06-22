@@ -2,6 +2,7 @@ package physics;
 
 import org.ejml.simple.SimpleMatrix;
 import physics.models.particles.Particle;
+import physics.models.particles.RigidBody;
 
 import java.util.List;
 
@@ -11,6 +12,8 @@ public class Integration {
     public static final int MID_POINT = 1;
     public static final int RUNGE_KUTA = 2;
     public static final int IMPLICIT_EURLER = 3;
+
+    private static final int VARIABLES = 4;
 
     public static void apply(List<? extends Particle> particles, double time, int mode) {
         switch (mode) {
@@ -90,20 +93,28 @@ public class Integration {
         }
     }
 
-    // TODO: Implement for RigidBody
     private static double[][] saveState(List<? extends Particle> particles){
         int dimensions = particles.get(0).getConstructPos().length;
-        double[][] state = new double[particles.size()][2 * dimensions];
+        double[][] state = new double[particles.size()][dimensions * VARIABLES];
         for (int i = 0; i < particles.size(); i++){
             Particle particle = particles.get(i);
-            state[i][0] = particle.getPosition()[0];
-            state[i][1] = particle.getPosition()[1];
-            state[i][2] = particle.getVelocity()[0];
-            state[i][3] = particle.getVelocity()[1];
+            if (particle instanceof RigidBody) {
+                RigidBody body = (RigidBody) particle;
+                state[i][0] = body.getPosition()[0];
+                state[i][1] = body.getPosition()[1];
+                state[i][2] = body.getVelocity()[0];
+                state[i][3] = body.getVelocity()[1];
+                state[i][4] = body.getOrientation();
+                state[i][5] = body.getAngular();
+            } else {
+                state[i][0] = particle.getPosition()[0];
+                state[i][1] = particle.getPosition()[1];
+                state[i][2] = particle.getVelocity()[0];
+                state[i][3] = particle.getVelocity()[1];
+            }
         } return state;
     }
 
-    // TODO: Implement for RigidBody
     private static void loadState(List<? extends Particle> particles, double[][] state){
         int dimensions = particles.get(0).getConstructPos().length;
         for (int i = 0; i < particles.size(); i++){
@@ -114,10 +125,14 @@ public class Integration {
             System.arraycopy(state[i], dimensions, velocity, 0, dimensions);
             particle.setPosition(position);
             particle.setVelocity(velocity);
+            if (particle instanceof RigidBody) {
+                RigidBody body = (RigidBody) particle;
+                body.setOrientation(state[i][4]);
+                body.setAngular(state[i][5]);
+            }
         }
     }
 
-    // TODO: Implement for RigidBody
     private static double[][] stateAdd(double[][] s1, double[][] s2) {
         double[][] res = new double[s1.length][s1[0].length];
         for (int i = 0; i < s1.length; i++) {
@@ -127,7 +142,6 @@ public class Integration {
         } return res;
     }
 
-    // TODO: Implement for RigidBody
     private static double[][] stateDiff(double[][] s1, double[][] s2) {
         double[][] res = new double[s1.length][s1[0].length];
         for (int i = 0; i < s1.length; i++) {
@@ -137,7 +151,6 @@ public class Integration {
         } return res;
     }
 
-    // TODO: Implement for RigidBody
     private static double[][] stateTimesScalar(double[][] state, double n) {
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[0].length; j++) {
