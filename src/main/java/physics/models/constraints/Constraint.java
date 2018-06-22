@@ -3,15 +3,18 @@ package physics.models.constraints;
 import org.ejml.simple.SimpleMatrix;
 import physics.models.particles.Particle;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public interface Constraint {
 
-    static void apply(List<? extends Particle> particles, List<Constraint> constraints, double ks, double kd) {
+    static void apply(List<Constraint> constraints, double ks, double kd) {
+        Set<Particle> aux = new HashSet<>();
+        for (Constraint constraint : constraints)
+            aux.addAll(Arrays.asList(constraint.getParticles()));
+        List<Particle> particles = new ArrayList<>(aux);
         if (constraints.isEmpty() || particles.isEmpty()) return;
         if (particles.stream().filter(distinctByKey((Particle p) -> p.getConstructPos().length)).limit(2).count() > 1)
             throw new IllegalArgumentException("The input contained particles with a different number of dimensions.");

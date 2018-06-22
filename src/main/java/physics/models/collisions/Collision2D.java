@@ -40,14 +40,14 @@ public class Collision2D implements Collision {
             Set<double[]> firstContains = Stream.of(pBody.calculatePoints()).filter(body::containsPoint).collect(Collectors.toSet());
             Set<double[]> secondContains = Stream.of(body.calculatePoints()).filter(pBody::containsPoint).collect(Collectors.toSet());
             if (firstContains.size() > 0)
-                resolveBodies(firstContains, body, pBody);
+                resolveBodies(body, pBody, firstContains);
             if (secondContains.size() > 0)
-                resolveBodies(secondContains, pBody, body);
+                resolveBodies(pBody, body, secondContains);
         } else if (body.containsPoint(particle.getPosition()))
             resolveParticle(body, particle);
     }
     
-    private void resolveBodies(Set<double[]> points, RigidBody2D b1, RigidBody2D b2) {
+    private void resolveBodies(RigidBody2D b1, RigidBody2D b2, Set<double[]> points) {
         for (double[] point : points) {
             double[][] edge = b1.calculateClosestEdge(point);
             double[] edgeVector = vecDiff(edge[1], edge[0]);
