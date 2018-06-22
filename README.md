@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.com/Eddydpyl/ParticleToy.svg?token=Fpth26ybpqjsTJdNeqmb&branch=master)](https://travis-ci.com/Eddydpyl/ParticleToy)
-
-# 2IMV25 - Interactive Virtual Environments
+# Paticle Toy [![Build Status](https://travis-ci.com/Eddydpyl/ParticleToy.svg?token=Fpth26ybpqjsTJdNeqmb&branch=master)](https://travis-ci.com/Eddydpyl/ParticleToy)
 
 ### Setting up the project
 As it is, the project in the master branch should be compatible with both InteliJ and Eclipse.
