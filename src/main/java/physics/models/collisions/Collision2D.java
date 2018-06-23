@@ -94,8 +94,8 @@ public class Collision2D implements Collision {
             double[] forceProjection = vecNegate(vecTimesScalar(negativeNormal,
                     vecDot(negativeNormal, particle.getForce()) / Math.pow(vecModule(negativeNormal), 2)));
             particle.setForce(vecAdd(particle.getForce(), forceProjection));
-            particle.setVelocity(vecAdd(particle.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / particle.getMass())));
-            particle.setPosition(intersection);
+            if (body.isActive()) particle.setVelocity(vecAdd(particle.getVelocity(), vecTimesScalar(vecNegate(impulse), 1 / particle.getMass())));
+            else particle.setVelocity(vecAdd(particle.getVelocity(), vecTimesScalar(vecNegate(impulse), 1.5 / particle.getMass())));
         }
     }
 
