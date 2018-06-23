@@ -32,13 +32,13 @@ public class Main {
     private static final int HEIGHT = 800;
     private static final double DELTA = 0.005;
     private static final double EPSILON = 0.05;
-    private static final double RATIO = Math.pow(10, -15);
-    private static final double H = 0.15;
+    private static final double[] RATIO = new double[]{0.00001, 0.00001, 0.1};
+    private static final double H = 0.1;
     
     private long window;
     private int method;
     private int zoomLevel;
-    private boolean showGrid;
+    private boolean showGrid, mouse;
 
     private List<Particle2D> particles;
     private List<Force> forces;
@@ -150,7 +150,7 @@ public class Main {
     }
 
     private void MouseSpring(int state) {
-        if (state == GLFW_PRESS) {
+        if (state == GLFW_PRESS && mouse) {
             DoubleBuffer xpos = BufferUtils.createDoubleBuffer(1);
             DoubleBuffer ypos = BufferUtils.createDoubleBuffer(1);
             glfwGetCursorPos(window, xpos, ypos);
@@ -181,7 +181,7 @@ public class Main {
                 mouseSpring = new SpringForce2D(mouseParticle, mouse, 5, 5, 0);
                 forces.add(mouseSpring);
             }
-        } else if (state == GLFW_RELEASE) {
+        } else if (state == GLFW_RELEASE && mouse) {
             if (mouseSpring != null) forces.remove(mouseSpring);
             mouseSpring = null;
             mouseParticle = null;
@@ -204,27 +204,17 @@ public class Main {
         int key2State = glfwGetKey(window, GLFW_KEY_2);
         if (key2State == GLFW_PRESS) {
             showGrid = false;
-            reset(Integration.EULER, ZOOM_0);
-            createCloth2D(5, 5, 0.1, 0.005, 5,5);
-        }
-        int key3State = glfwGetKey(window, GLFW_KEY_3);
-        if (key3State == GLFW_PRESS) {
-            showGrid = false;
+            mouse = false;
             reset(Integration.EULER, ZOOM_0);
             createLiquidWithCloth();
-        }
-        int key4State = glfwGetKey(window, GLFW_KEY_4);
-        if (key4State == GLFW_PRESS) {
-            showGrid = false;
-            reset(Integration.MID_POINT, ZOOM_0);
-            createLiquidWithRectangular();
         }
     }
 
     private void defaultState() {
         showGrid = false;
+        mouse = false;
         reset(Integration.MID_POINT, ZOOM_0);
-        createLiquid(new double[]{0,0}, 10, 10, 0.01, 0.00001);
+        createLiquidWithRectangular();
     }
 
     private void reset(int method, int zoomLevel) {
@@ -319,8 +309,9 @@ public class Main {
             if (particle instanceof Particle2D) {
                 if (particle instanceof FluidParticle2D) {
                     FluidParticle2D fluidParticle = (FluidParticle2D) particle;
-                    forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H, mass * RATIO));
-                    forces.add(new GravityForce2D((Particle2D) particle));
+                    double[] weights = new double[]{mass * RATIO[0], mass * RATIO[1], mass * RATIO[2]};
+                    forces.add(new LiquidForces2D(fluidParticle, grid, 12.75, 1, 100, H, weights));
+                    forces.add(new GravityForce2D(fluidParticle));
                 }
             }
         }
@@ -330,23 +321,20 @@ public class Main {
         createLiquid(new double[]{0,0.5},10, 30, 0.01, 0.00001);
         particles.add(new Rectangle2D(new double[]{0.1, 0}, 0.2, 0.2, 0.01, true, true, true));
         particles.add(new Rectangle2D(new double[]{-0.1, -0.3}, 0.2, 0.2, 0.01, true, true, true));
-        particles.add(new Rectangle2D(new double[]{0.1, -0.6}, 0.2, 0.2, 0.01, true, true, true));
-
-        particles.add(new Rectangle2D(new double[]{-1, 0}, 0.1, 5, 1,false,false,true));
-        particles.add(new Rectangle2D(new double[]{1, 0}, 0.1, 5, 1,false,false,true));
-        particles.add(new Rectangle2D(new double[]{0, -1}, 5, 0.1, 1,false,false,true));
-        particles.add(new Rectangle2D(new double[]{0, 1}, 5, 0.1, 1,false,false,true));
+        particles.add(new Rectangle2D(new double[]{0.1, -0.7}, 0.2, 0.2, 0.01, true, true, true));
+        createBox();
     }
 
     private void createLiquidWithCloth() {
         createCloth2D(5, 5, 0.05, 1, 5000,5000);
-
-        createLiquid(new double[]{-0.25,-0.25}, 30, 10, 0.01, 0.00001);
+        createLiquid(new double[]{0,0.5}, 20, 15, 0.005, 0.00001);
         for (Particle2D particle : particles) {
             if (particle instanceof FluidParticle2D)
-                forces.add(new GravityForce2D(particle, new double[]{0.8, 1}));
-        }
+                forces.add(new GravityForce2D(particle));
+        } createBox();
+    }
 
+    private void createBox() {
         particles.add(new Rectangle2D(new double[]{-1, 0}, 0.1, 5, 1,false,false,true));
         particles.add(new Rectangle2D(new double[]{1, 0}, 0.1, 5, 1,false,false,true));
         particles.add(new Rectangle2D(new double[]{0, -1}, 5, 0.1, 1,false,false,true));

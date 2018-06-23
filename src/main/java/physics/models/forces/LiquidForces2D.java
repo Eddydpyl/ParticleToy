@@ -24,9 +24,9 @@ public class LiquidForces2D implements Force {
     private double mu;
     private double p0;
     private double h;
-    private double w; // Auxiliary variable scaling forces.
+    private double[] w; // Auxiliary variable scaling forces.
 
-    public LiquidForces2D(FluidParticle2D particle, Grid2D grid2D, double sigma, double mu, double p0, double h, double w) {
+    public LiquidForces2D(FluidParticle2D particle, Grid2D grid2D, double sigma, double mu, double p0, double h, double[] w) {
         this.particle = particle;
         this.grid2D = grid2D;
         this.sigma = sigma;
@@ -57,9 +57,9 @@ public class LiquidForces2D implements Force {
                 }
             }
         }
-        particle.setForce(vecDiff(particle.getForce(), vecTimesScalar(pressureForces, w)));
-        particle.setForce(vecDiff(particle.getForce(), vecTimesScalar(surfaceForces, w)));
-        particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(viscousForces, w)));
+        particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(pressureForces, w[0])));
+        particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(surfaceForces, w[1])));
+        particle.setForce(vecAdd(particle.getForce(), vecTimesScalar(viscousForces, w[2])));
     }
 
     @Override
