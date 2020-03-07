@@ -1,4 +1,4 @@
-# Paticle Toy [![Build Status](https://travis-ci.com/Eddydpyl/ParticleToy.svg?token=Fpth26ybpqjsTJdNeqmb&branch=master)](https://travis-ci.com/Eddydpyl/ParticleToy)
+# Paticle Toy [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://travis-ci.com/Eddydpyl/ParticleToy.svg?token=Fpth26ybpqjsTJdNeqmb&branch=master)](https://travis-ci.com/Eddydpyl/ParticleToy)
 
 ### Setting up the project
 As it is, the project in the master branch should be compatible with both InteliJ and Eclipse.
