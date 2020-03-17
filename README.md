@@ -1,4 +1,4 @@
-# Paticle Toy [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# Paticle Toy [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Status: Abandoned](https://img.shields.io/badge/Status-Abandoned-red.svg)
 
 ### Setting up the project
 As it is, the project in the master branch should be compatible with both InteliJ and Eclipse.
